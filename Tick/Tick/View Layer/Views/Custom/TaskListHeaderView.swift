@@ -1,5 +1,5 @@
 //
-//  TaskListSubheader.swift
+//  TaskListHeaderView.swift
 //  Tick
 //
 //  Created by Andre Pham on 8/3/2024.
@@ -8,10 +8,10 @@
 import Foundation
 import UIKit
 
-class TaskListSubheaderView: TickUIView {
+class TaskListHeaderView: TickUIView {
     
     private let container = TickView()
-    public let subheader = TickText()
+    public let header = TickText()
     public var view: UIView {
         return self.container.view
     }
@@ -19,16 +19,16 @@ class TaskListSubheaderView: TickUIView {
     override init() {
         super.init()
         
-        self.container.addSubview(self.subheader)
+        self.container.addSubview(self.header)
         
-        self.subheader
+        self.header
             .constrainCenterVertical()
             .constrainLeft(padding: 24)
-            .setFont(to: TickFont(font: TickFonts.Quicksand.Bold, size: 24))
+            .setFont(to: TickFont(font: TickFonts.Inter.Black, size: 48))
     }
     
-    func setContent(subheader: String) {
-        self.self.subheader.setText(to: subheader)
+    func setContent(header: String) {
+        self.self.header.setText(to: header)
     }
     
 }

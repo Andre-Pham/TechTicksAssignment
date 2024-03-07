@@ -10,7 +10,7 @@ import UIKit
 class ViewController: UIViewController {
     
     private var root: TickView { return TickView(self.view) }
-    private let subheader = TaskListSubheaderView()
+    private let header = TaskListHeaderView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -18,12 +18,12 @@ class ViewController: UIViewController {
         
         self.root
             .setBackgroundColor(to: TickColors.backgroundFill)
-            .addSubview(self.subheader)
+            .addSubview(self.header)
         
-        self.subheader
+        self.header
             .constrainCenterVertical()
             .constrainHorizontal()
-            .setContent(subheader: "Hello World")
+            .setContent(header: "Hello World")
     }
 
 }
