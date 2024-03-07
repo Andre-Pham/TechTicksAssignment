@@ -8,12 +8,21 @@
 import UIKit
 
 class ViewController: UIViewController {
+    
+    private let text = UILabel()
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view.
+        // Do any additional setup after loading the view
+        
+        self.text.translatesAutoresizingMaskIntoConstraints = false
+        self.view.addSubview(self.text)
+        NSLayoutConstraint.activate([
+            text.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
+            text.centerXAnchor.constraint(equalTo: self.view.centerXAnchor)
+        ])
+        self.text.text = "Hello World"
+        self.text.font = TickFont(font: TickFonts.Inter.Black, size: 50)
     }
 
-
 }
-
