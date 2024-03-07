@@ -2,7 +2,7 @@
 
 The app is a "task management app".
 
-* Lists of tasks the user creates
+* List of tasks the user creates
 * Filter to view tasks based on their status (upcoming, ongoing, completed)
 * Button to add new tasks
 
@@ -19,3 +19,8 @@ Add task screen:
 * Task title and description
 * Date picker for start/end dates
 * Task status option
+
+Potential features?
+
+* Select multiple - delete all
+* Delete all completed
