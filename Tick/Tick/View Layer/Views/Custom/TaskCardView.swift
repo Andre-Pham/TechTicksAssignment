@@ -47,21 +47,21 @@ class TaskCardView: TickUIView {
         self.status
             .setFont(to: TickFont(font: TickFonts.Poppins.Light, size: 12))
             .setTextColor(to: TickColors.textDark3)
-            .constrainHorizontal()
+            .constrainLeft()
         
         self.title
             .setFont(to: TickFont(font: TickFonts.Poppins.SemiBold, size: 18))
-            .constrainHorizontal()
+            .constrainLeft()
         
         self.description
             .setFont(to: TickFont(font: TickFonts.Poppins.Medium, size: 14))
             .setTextColor(to: TickColors.textDark3)
-            .constrainHorizontal()
+            .constrainLeft()
         
         self.duration
             .setFont(to: TickFont(font: TickFonts.Poppins.Light, size: 12))
             .setTextColor(to: TickColors.textDark3)
-            .constrainHorizontal()
+            .constrainLeft()
     }
     
     func setContent(title: String, description: String, duration: String, status: String) {
