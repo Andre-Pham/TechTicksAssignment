@@ -23,6 +23,7 @@ class ViewController: UIViewController {
         ])
         self.text.text = "Hello World"
         self.text.font = TickFont(font: TickFonts.Inter.Black, size: 50)
+        self.text.textColor = TickColors.accent
     }
 
 }
