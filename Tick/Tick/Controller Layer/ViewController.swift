@@ -10,7 +10,7 @@ import UIKit
 class ViewController: UIViewController {
     
     private var root: TickView { return TickView(self.view) }
-    private let card = TaskCardView()
+    private let subheader = TaskListSubheaderView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -18,17 +18,12 @@ class ViewController: UIViewController {
         
         self.root
             .setBackgroundColor(to: TickColors.backgroundFill)
-            .addSubview(self.card)
+            .addSubview(self.subheader)
         
-        self.card
-            .constrainHorizontal(padding: 12)
+        self.subheader
             .constrainCenterVertical()
-            .setContent(
-                title: "Hello World",
-                description: "This is a place holder component",
-                duration: "Duration Text",
-                status: "Status Text"
-            )
+            .constrainHorizontal()
+            .setContent(subheader: "Hello World")
     }
 
 }
