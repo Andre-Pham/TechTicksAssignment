@@ -9,21 +9,26 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    private let text = UILabel()
+    private var root: TickView { return TickView(self.view) }
+    private let card = TaskCardView()
 
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view
         
-        self.text.translatesAutoresizingMaskIntoConstraints = false
-        self.view.addSubview(self.text)
-        NSLayoutConstraint.activate([
-            text.centerYAnchor.constraint(equalTo: self.view.centerYAnchor),
-            text.centerXAnchor.constraint(equalTo: self.view.centerXAnchor)
-        ])
-        self.text.text = "Hello World"
-        self.text.font = TickFont(font: TickFonts.Inter.Black, size: 50)
-        self.text.textColor = TickColors.accent
+        self.root
+            .setBackgroundColor(to: TickColors.backgroundFill)
+            .addSubview(self.card)
+        
+        self.card
+            .constrainHorizontal(padding: 12)
+            .constrainCenterVertical()
+            .setContent(
+                title: "Hello World",
+                description: "This is a place holder component",
+                duration: "Duration Text",
+                status: "Status Text"
+            )
     }
 
 }

@@ -13,7 +13,7 @@ enum TickDimensions {
     static let screenContentPaddingHorizontal = 20.0
     /// The vertical padding around all screen content
     static let screenContentPaddingVertical = 24.0
-    /// Corner radius of background views such as background color
+    /// Corner radius of background views such as containers
     static let backgroundCornerRadius = 30.0
     /// Corner radius of foreground views such as buttons
     static let foregroundCornerRadius = 20.0
