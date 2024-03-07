@@ -20,7 +20,12 @@ Add task screen:
 * Date picker for start/end dates
 * Task status option
 
+Clarifications:
+
+* If a task is past its end date/time, is it counted as ongoing? Or should I add an "overdue" option
+
 Potential features?
 
 * Select multiple - delete all
 * Delete all completed
+* Overdue tasks
