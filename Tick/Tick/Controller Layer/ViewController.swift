@@ -125,6 +125,10 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                 for: indexPath
             ) as! TaskListHeaderReusableView
             view.header.setContent(header: Strings("header.tasks").local)
+            view.header.newTaskButton.setOnTap({
+                let newController = NewTaskViewController()
+                self.present(newController, animated: true)
+            })
             return view
         } else if kind == TaskListSectionHeaderReusableView.ELEMENT_KIND {
             let view = collectionView.dequeueReusableSupplementaryView(

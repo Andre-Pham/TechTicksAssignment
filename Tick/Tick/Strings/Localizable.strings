@@ -8,6 +8,8 @@
 
 "header.tasks" = "Tasks";
 
+"button.new" = "New";
+
 "taskStatus.upcoming" = "upcoming";
 "taskStatus.ongoing" = "ongoing";
 "taskStatus.completed" = "completed";

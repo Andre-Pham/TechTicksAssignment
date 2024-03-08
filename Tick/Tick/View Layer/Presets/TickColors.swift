@@ -30,7 +30,7 @@ enum TickColors {
     static let backgroundFill = UIColor(named: "Assets#F2F2F5#3B3B47")!
     static let foregroundFill = UIColor(named: "Assets#FFFFFF#201F25")!
     static let primaryComponentFill = Self.accent
-    static let secondaryComponentFill = UIColor(named: "Assets#E4E5EA#454552")!
+    static let secondaryComponentFill = UIColor(named: "Assets#F4F5F7#454552")!
     
     // MARK: - Text
     
