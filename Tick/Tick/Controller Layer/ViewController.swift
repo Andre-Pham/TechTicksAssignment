@@ -131,6 +131,27 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TaskCardViewCell.REUSE_IDENTIFIER, for: indexPath) as! TaskCardViewCell
         let task = self.renderedTasks[indexPath.section].grouping[indexPath.row]
         cell.card.setContent(title: task.title, description: task.description, duration: task.ongoingDuration.description, status: "TODO")
+        switch task.status {
+        case .upcoming:
+            cell.card.checkBox.removeFromSuperView()
+        case .ongoing:
+            cell.card.checkBox
+                .setColor(checked: TickColors.completedTask, unchecked: TickColors.ongoingTask)
+                .setIcon(to: "checkmark")
+                .setOnRelease({ isChecked in
+                    task.setCompletedStatus(to: isChecked)
+                    self.databaseController?.editTask(task)
+                })
+        case .completed:
+            cell.card.checkBox
+                .setColor(checked: TickColors.completedTask, unchecked: TickColors.ongoingTask)
+                .setIcon(to: "checkmark")
+                .setState(checked: true)
+                .setOnRelease({ isChecked in
+                    task.setCompletedStatus(to: isChecked)
+                    self.databaseController?.editTask(task)
+                })
+        }
         return cell
     }
 
@@ -181,6 +202,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         print("onTaskOperation - updates received")
         self.taskCollection = TaskCollection(tasks: tasks)
         self.renderedTasks = self.taskCollection.getSectionedTasks(onlyInclude: [.ongoing, .upcoming, .completed])
+        self.collectionView.reloadData()
         self.collectionView.collectionViewLayout.invalidateLayout()
     }
 

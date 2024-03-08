@@ -17,7 +17,7 @@ class TaskCardView: TickUIView {
     public let description = TickText()
     public let duration = TickText()
     public let status = TickText()
-    public let completedToggle = TickChipToggle()
+    public let checkBox = CheckBoxView()
     public var view: UIView {
         return self.container.view
     }
@@ -35,7 +35,7 @@ class TaskCardView: TickUIView {
             .constrainHorizontal(padding: 16)
             .setSpacing(to: 12)
             .addView(self.contentStack)
-            .addView(self.completedToggle)
+            .addView(self.checkBox)
         
         self.contentStack
             .setSpacing(to: 2)

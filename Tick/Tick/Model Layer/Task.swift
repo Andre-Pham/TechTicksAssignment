@@ -25,6 +25,9 @@ class Task: ManagedObjectStorable {
     public var canBeEdited: Bool {
         return self.status == .ongoing
     }
+    public var canBeChecked: Bool {
+        return self.status == .ongoing || self.status == .completed
+    }
     
     init(id: UUID = UUID(), title: String, description: String, ongoingDuration: DateInterval, markedComplete: Bool) {
         self.id = id
@@ -32,6 +35,13 @@ class Task: ManagedObjectStorable {
         self.description = description
         self.ongoingDuration = ongoingDuration
         self.markedComplete = markedComplete
+    }
+    
+    func setCompletedStatus(to completed: Bool) {
+        guard self.canBeChecked else {
+            return
+        }
+        self.markedComplete = completed
     }
     
     // MARK: - ManagedObjectStorable

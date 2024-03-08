@@ -34,14 +34,18 @@ class TickImage: TickUIView {
     }
     
     @discardableResult
-    func setImage(_ image: UIImage) -> Self {
+    func setImage(_ image: UIImage?) -> Self {
         self.imageView.image = image
         return self
     }
     
     @discardableResult
-    func setImage(_ image: CGImage) -> Self {
-        self.imageView.image = UIImage(cgImage: image)
+    func setImage(_ image: CGImage?) -> Self {
+        if let image {
+            self.imageView.image = UIImage(cgImage: image)
+        } else {
+            self.imageView.image = nil
+        }
         return self
     }
     
