@@ -31,8 +31,8 @@ class TaskCardView: TickUIView {
             .addSubview(self.columnsStack)
         
         self.columnsStack
-            .constrainVertical(padding: 16)
-            .constrainHorizontal(padding: 18)
+            .constrainVertical(padding: 14)
+            .constrainHorizontal(padding: 16)
             .setSpacing(to: 12)
             .addView(self.contentStack)
             .addView(self.completedToggle)

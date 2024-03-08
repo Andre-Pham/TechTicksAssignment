@@ -23,7 +23,7 @@ class TaskListHeaderView: TickUIView {
         
         self.header
             .constrainCenterVertical()
-            .constrainLeft(padding: 24)
+            .constrainLeft(padding: 8)
             .setFont(to: TickFont(font: TickFonts.Inter.Black, size: 48))
     }
     

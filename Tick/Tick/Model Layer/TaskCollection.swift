@@ -9,6 +9,8 @@ import Foundation
 
 class TaskCollection {
     
+    public typealias TaskGrouping = (status: TaskStatus, grouping: [Task])
+    
     private var tasks = [Task]()
     
     init() { }
@@ -17,11 +19,11 @@ class TaskCollection {
         self.tasks.append(task)
     }
     
-    func getSectionedTasks(onlyInclude: [TaskStatus]) -> [[Task]] {
-        var result = [[Task]]()
+    func getSectionedTasks(onlyInclude: [TaskStatus]) -> [TaskGrouping] {
+        var result = [TaskGrouping]()
         for status in onlyInclude {
             let section = self.tasks.filter({ $0.status == status })
-            result.append(section)
+            result.append(TaskGrouping(status: status, grouping: section))
         }
         return result
     }

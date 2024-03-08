@@ -10,7 +10,7 @@ import Foundation
 enum TickDimensions {
     
     /// The horizontal padding around all screen content
-    static let screenContentPaddingHorizontal = 20.0
+    static let screenContentPaddingHorizontal = 14.0
     /// The vertical padding around all screen content
     static let screenContentPaddingVertical = 24.0
     /// Corner radius of background views such as containers

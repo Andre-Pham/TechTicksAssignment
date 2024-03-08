@@ -9,11 +9,18 @@ import UIKit
 
 class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
     
+    private static let TASK_CARD_SPACING = 12.0
+    private static let SECTION_PADDING_TOP = 0.0
+    private static let SECTION_PADDING_BOTTOM = 14.0
+    private static let SECTION_PADDING_LEFT = 14.0
+    private static let SECTION_PADDING_RIGHT = 14.0
+    private static let SECTION_HEADER_HEIGHT = 36.0
+    
     private var root: TickView { return TickView(self.view) }
-    private var collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+    private let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     
     private let taskCollection = TaskCollection()
-    private var renderedTasks = [[Task]]()
+    private var renderedTasks = [TaskCollection.TaskGrouping]()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,6 +40,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         self.renderedTasks = self.taskCollection.getSectionedTasks(onlyInclude: [.ongoing, .upcoming, .completed])
         
         self.root
+            .setBackgroundColor(to: TickColors.backgroundFill)
             .addSubview(TickView(self.collectionView))
         
         self.collectionView.dataSource = self
@@ -40,16 +48,18 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         self.collectionView.translatesAutoresizingMaskIntoConstraints = false
         TickView(self.collectionView)
             .setBackgroundColor(to: TickColors.backgroundFill)
-            .constrainAllSides(respectSafeArea: false)
+            .constrainHorizontal()
+            .constrainTop()
+            .constrainBottom(respectSafeArea: false)
         
         self.collectionView.register(
             TaskCardViewCell.self,
             forCellWithReuseIdentifier: TaskCardViewCell.REUSE_IDENTIFIER
         )
         self.collectionView.register(
-            TaskListSubheaderReusableView.self,
-            forSupplementaryViewOfKind: TaskListSubheaderReusableView.ELEMENT_KIND,
-            withReuseIdentifier: TaskListSubheaderReusableView.REUSE_IDENTIFIER
+            TaskListSectionHeaderReusableView.self,
+            forSupplementaryViewOfKind: TaskListSectionHeaderReusableView.ELEMENT_KIND,
+            withReuseIdentifier: TaskListSectionHeaderReusableView.REUSE_IDENTIFIER
         )
         self.collectionView.register(
             TaskListHeaderReusableView.self,
@@ -58,22 +68,21 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         )
         
         self.collectionView.collectionViewLayout = UICollectionViewCompositionalLayout { sectionIndex, layoutEnvironment in
-            // Define size and items like before
             let size = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1), heightDimension: .estimated(44))
             let item = NSCollectionLayoutItem(layoutSize: size)
             let group = NSCollectionLayoutGroup.horizontal(layoutSize: size, subitems: [item])
             let section = NSCollectionLayoutSection(group: group)
             section.contentInsets = NSDirectionalEdgeInsets(
-                top: TickDimensions.screenContentPaddingVertical,
-                leading: TickDimensions.screenContentPaddingHorizontal,
-                bottom: TickDimensions.screenContentPaddingVertical,
-                trailing: TickDimensions.screenContentPaddingHorizontal
+                top: Self.SECTION_PADDING_TOP,
+                leading: Self.SECTION_PADDING_LEFT,
+                bottom: Self.SECTION_PADDING_BOTTOM,
+                trailing: Self.SECTION_PADDING_RIGHT
             )
-            section.interGroupSpacing = 2
-            let headerFooterSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(40))
+            section.interGroupSpacing = Self.TASK_CARD_SPACING
+            let headerFooterSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(Self.SECTION_HEADER_HEIGHT))
             let sectionHeader = NSCollectionLayoutBoundarySupplementaryItem(
                 layoutSize: headerFooterSize,
-                elementKind: TaskListSubheaderReusableView.ELEMENT_KIND,
+                elementKind: TaskListSectionHeaderReusableView.ELEMENT_KIND,
                 alignment: .top
             )
             sectionHeader.pinToVisibleBounds = true
@@ -83,8 +92,7 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                     layoutSize: mainHeaderSize,
                     elementKind: TaskListHeaderReusableView.ELEMENT_KIND,
                     alignment: .top,
-                    absoluteOffset: CGPoint(x: 0.0,
-                    y: -40)
+                    absoluteOffset: CGPoint(x: 0.0, y: -Self.SECTION_HEADER_HEIGHT)
                 )
                 section.boundarySupplementaryItems = [mainHeader, sectionHeader]
             } else {
@@ -99,12 +107,12 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
 
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return self.renderedTasks[section].count
+        return self.renderedTasks[section].grouping.count
     }
 
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TaskCardViewCell.REUSE_IDENTIFIER, for: indexPath) as! TaskCardViewCell
-        let task = self.renderedTasks[indexPath.section][indexPath.row]
+        let task = self.renderedTasks[indexPath.section].grouping[indexPath.row]
         cell.card.setContent(title: task.title, description: task.description, duration: task.ongoingDuration.description, status: "TODO")
         return cell
     }
@@ -116,15 +124,26 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
                 withReuseIdentifier: TaskListHeaderReusableView.REUSE_IDENTIFIER,
                 for: indexPath
             ) as! TaskListHeaderReusableView
-            view.header.setContent(header: "TODO")
+            view.header.setContent(header: Strings("header.tasks").local)
             return view
-        } else if kind == TaskListSubheaderReusableView.ELEMENT_KIND {
+        } else if kind == TaskListSectionHeaderReusableView.ELEMENT_KIND {
             let view = collectionView.dequeueReusableSupplementaryView(
                 ofKind: kind,
-                withReuseIdentifier: TaskListSubheaderReusableView.REUSE_IDENTIFIER,
+                withReuseIdentifier: TaskListSectionHeaderReusableView.REUSE_IDENTIFIER,
                 for: indexPath
-            ) as! TaskListSubheaderReusableView
-            view.subheader.setContent(subheader: "TODO SUBHEADER")
+            ) as! TaskListSectionHeaderReusableView
+            let taskStatus = self.renderedTasks[indexPath.section].status
+            switch taskStatus {
+            case .upcoming:
+                view.sectionHeader.setContent(subheader: Strings("taskStatus.upcoming").local.uppercased())
+                view.sectionHeader.sectionHeader.setTextColor(to: TickColors.upcomingTask)
+            case .ongoing:
+                view.sectionHeader.setContent(subheader: Strings("taskStatus.ongoing").local.uppercased())
+                view.sectionHeader.sectionHeader.setTextColor(to: TickColors.ongoingTask)
+            case .completed:
+                view.sectionHeader.setContent(subheader: Strings("taskStatus.completed").local.uppercased())
+                view.sectionHeader.sectionHeader.setTextColor(to: TickColors.completedTask)
+            }
             return view
         }
         fatalError("Unrecognized element kind passed")
@@ -139,19 +158,16 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
 
 }
 
-class TaskListSubheaderReusableView: UICollectionReusableView {
+class TaskListSectionHeaderReusableView: UICollectionReusableView {
 
     public static let REUSE_IDENTIFIER = UUID().uuidString
     public static let ELEMENT_KIND = UUID().uuidString
-    public let subheader = TaskListSubheaderView()
+    public let sectionHeader = TaskListSectionHeaderView()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
-        self.addSubview(self.subheader.view)
-        self.subheader.constrainAllSides()
-        
-//        self.layer.borderWidth = 1.0
-//        self.layer.borderColor = UIColor.red.cgColor
+        self.addSubview(self.sectionHeader.view)
+        self.sectionHeader.constrainAllSides()
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -170,9 +186,6 @@ class TaskListHeaderReusableView: UICollectionReusableView {
         super.init(frame: frame)
         self.addSubview(self.header.view)
         self.header.constrainAllSides()
-        
-//        self.layer.borderWidth = 1.0
-//        self.layer.borderColor = UIColor.green.cgColor
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -197,9 +210,6 @@ class TaskCardViewCell: UICollectionViewCell {
         contentView.translatesAutoresizingMaskIntoConstraints = false
         self.contentView.addSubview(self.card.view)
         self.card.constrainAllSides()
-        
-//        self.layer.borderWidth = 1.0
-//        self.layer.borderColor = UIColor.blue.cgColor
     }
     
     override func systemLayoutSizeFitting(_ targetSize: CGSize, withHorizontalFittingPriority horizontalFittingPriority: UILayoutPriority, verticalFittingPriority: UILayoutPriority) -> CGSize {

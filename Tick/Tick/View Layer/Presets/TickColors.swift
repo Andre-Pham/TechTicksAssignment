@@ -19,6 +19,12 @@ enum TickColors {
     static let warning = UIColor(named: "Assets#CB4343")!
     static let success = UIColor(named: "Assets#51CF66")!
     
+    // MARK: - Tasks
+    
+    static let ongoingTask = UIColor(named: "Assets#FE3A2E")!
+    static let upcomingTask = UIColor(named: "Assets#007AFF")!
+    static let completedTask = UIColor(named: "Assets#18C657")!
+    
     // MARK: - Fill
     
     static let backgroundFill = UIColor(named: "Assets#F2F2F5#3B3B47")!

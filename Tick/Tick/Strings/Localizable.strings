@@ -5,3 +5,10 @@
   Created by Andre Pham on 8/3/2024.
   
 */
+
+"header.tasks" = "Tasks";
+
+"taskStatus.upcoming" = "upcoming";
+"taskStatus.ongoing" = "ongoing";
+"taskStatus.completed" = "completed";
+
