@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate {
+class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, DatabaseListener {
     
     private static let TASK_CARD_SPACING = 12.0
     private static let SECTION_PADDING_TOP = 0.0
@@ -19,11 +19,18 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     private var root: TickView { return TickView(self.view) }
     private let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     
-    private let taskCollection = TaskCollection()
+    private var taskCollection = TaskCollection()
     private var renderedTasks = [TaskCollection.TaskGrouping]()
+    
+    // Core Data
+    var listenerType = DatabaseListenerType.task
+    weak var databaseController: LocalDatabase?
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let appDelegate = UIApplication.shared.delegate as? AppDelegate
+        self.databaseController = appDelegate?.databaseController
         
         // Populate task collection with dummy tasks
         let dateFormatter = DateFormatter()
@@ -102,6 +109,16 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         }
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.databaseController?.addListener(listener: self)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.databaseController?.removeListener(listener: self)
+    }
+    
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return self.renderedTasks.count
     }
@@ -158,6 +175,13 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         coordinator.animate(alongsideTransition: { context in
             self.collectionView.collectionViewLayout.invalidateLayout()
         }, completion: nil)
+    }
+    
+    func onTaskOperation(operation: DatabaseOperation, tasks: [Task]) {
+        print("onTaskOperation - updates received")
+        self.taskCollection = TaskCollection(tasks: tasks)
+        self.renderedTasks = self.taskCollection.getSectionedTasks(onlyInclude: [.ongoing, .upcoming, .completed])
+        self.collectionView.collectionViewLayout.invalidateLayout()
     }
 
 }

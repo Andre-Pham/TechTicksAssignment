@@ -9,6 +9,7 @@ import Foundation
 
 class Task {
     
+    public let id: UUID
     private(set) var title: String
     private(set) var description: String
     private(set) var ongoingDuration: DateInterval
@@ -24,7 +25,8 @@ class Task {
         return self.status == .ongoing
     }
     
-    init(title: String, description: String, ongoingDuration: DateInterval, markedComplete: Bool) {
+    init(id: UUID = UUID(), title: String, description: String, ongoingDuration: DateInterval, markedComplete: Bool) {
+        self.id = id
         self.title = title
         self.description = description
         self.ongoingDuration = ongoingDuration

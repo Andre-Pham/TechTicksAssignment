@@ -11,9 +11,11 @@ class TaskCollection {
     
     public typealias TaskGrouping = (status: TaskStatus, grouping: [Task])
     
-    private var tasks = [Task]()
+    private var tasks: [Task]
     
-    init() { }
+    init(tasks: [Task] = []) {
+        self.tasks = tasks
+    }
     
     func addTask(_ task: Task) {
         self.tasks.append(task)

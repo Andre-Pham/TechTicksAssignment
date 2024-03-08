@@ -25,8 +25,13 @@ class NewTaskViewController: UIViewController {
     private let endDatePicker = TickDatePicker()
     private let saveButton = TickButton()
     
+    weak var databaseController: LocalDatabase?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let appDelegate = UIApplication.shared.delegate as? AppDelegate
+        self.databaseController = appDelegate?.databaseController
         
         self.root
             .setBackgroundColor(to: TickColors.foregroundFill)
@@ -105,7 +110,14 @@ class NewTaskViewController: UIViewController {
             .setLabel(to: "Save")
             .setFont(to: TickFont(font: TickFonts.Poppins.Bold, size: 18), color: TickColors.textPrimaryComponent)
             .setOnTap({
-                print("Save!")
+                self.databaseController?.writeTask(Task(
+                    title: self.titleEntry.text,
+                    description: self.descriptionEntry.text,
+                    ongoingDuration: DateInterval(start: Date(), end: Date()), // TODO: Fix
+                    markedComplete: false
+                ))
+                // TODO: Rework save changes
+//                self.databaseController?.saveChanges()
             })
     }
     
