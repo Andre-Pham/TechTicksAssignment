@@ -60,11 +60,11 @@ class NewTaskViewController: UIViewController {
         
         self.titleEntry
             .constrainHorizontal()
-        self.titleEntry.label.setText(to: "Task Name")
+            .setLabel(to: Strings("label.taskName").local)
         
         self.descriptionEntry
             .constrainHorizontal()
-        self.descriptionEntry.label.setText(to: "Task Description")
+            .setLabel(to: Strings("label.taskDescription").local)
         
         self.dateStack
             .constrainHorizontal()
@@ -87,7 +87,7 @@ class NewTaskViewController: UIViewController {
         self.startDateLabel
             .setFont(to: TickFont(font: TickFonts.Poppins.Medium, size: 14))
             .setTextColor(to: TickColors.textDark2)
-            .setText(to: "From")
+            .setText(to: Strings("label.fromDate").local)
         
         self.startDatePicker
             .setOnDatePicked({ date in
@@ -97,7 +97,7 @@ class NewTaskViewController: UIViewController {
         self.endDateLabel
             .setFont(to: TickFont(font: TickFonts.Poppins.Medium, size: 14))
             .setTextColor(to: TickColors.textDark2)
-            .setText(to: "To")
+            .setText(to: Strings("label.toDate").local)
         
         self.endDatePicker
             .setOnDatePicked({ date in

@@ -14,3 +14,7 @@
 "taskStatus.ongoing" = "ongoing";
 "taskStatus.completed" = "completed";
 
+"label.taskName" = "Name";
+"label.taskDescription" = "Description";
+"label.fromDate" = "From";
+"label.toDate" = "To";

@@ -10,8 +10,7 @@ import UIKit
 
 class TickLabelledTextInput: TickUIView {
     
-    // TODO: Change this to private
-    public let label = TickText()
+    private let label = TickText()
     private let stack = TickVStack()
     private let textInput = PaddedTextField()
     private var onSubmit: (() -> Void)? = nil
@@ -51,10 +50,17 @@ class TickLabelledTextInput: TickUIView {
         self.textInput.addTarget(self, action: #selector(self.handleSubmit), for: .editingDidEndOnExit)
         NotificationCenter.default.addObserver(self, selector: #selector(self.textFieldDidBeginEditing), name: UITextField.textDidBeginEditingNotification, object: self.textInput)
         NotificationCenter.default.addObserver(self, selector: #selector(self.textFieldDidEndEditing), name: UITextField.textDidEndEditingNotification, object: self.textInput)
+        
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(self.onTap))
+        self.view.addGestureRecognizer(tapGestureRecognizer)
     }
     
     deinit {
         NotificationCenter.default.removeObserver(self)
+    }
+    
+    @objc private func onTap() {
+        self.textInput.becomeFirstResponder()
     }
     
     @objc private func handleSubmit() {
@@ -122,6 +128,12 @@ class TickLabelledTextInput: TickUIView {
     @discardableResult
     func setTextAlignment(to alignment: NSTextAlignment) -> Self {
         self.textInput.textAlignment = alignment
+        return self
+    }
+    
+    @discardableResult
+    func setLabel(to label: String) -> Self {
+        self.label.setText(to: label)
         return self
     }
     
