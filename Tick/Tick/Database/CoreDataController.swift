@@ -42,8 +42,8 @@ class CoreDataController: NSObject {
     func readAllTasks() -> [Task] {
         if self.allTickTasksFetchedResultsController == nil {
             // Instantiate fetch request
-            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: "TaskEntity")
-            let nameSortDescriptor = NSSortDescriptor(key: "taskStart", ascending: true)
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: Task.ENTITY_NAME)
+            let nameSortDescriptor = NSSortDescriptor(key: Task.StorableAttributes.start.rawValue, ascending: true)
             fetchRequest.sortDescriptors = [nameSortDescriptor]
             self.allTickTasksFetchedResultsController = NSFetchedResultsController<NSManagedObject>(
                 fetchRequest: fetchRequest,
@@ -63,21 +63,7 @@ class CoreDataController: NSObject {
             return [Task]()
         }
         return fetchedTasks.compactMap({ managedObject in
-            if let id = managedObject.value(forKey: "taskID") as? UUID,
-               let title = managedObject.value(forKey: "taskTitle") as? String,
-               let description = managedObject.value(forKey: "taskDescription") as? String,
-               let start = managedObject.value(forKey: "taskStart") as? Date,
-               let end = managedObject.value(forKey: "taskEnd") as? Date,
-               let markedComplete = managedObject.value(forKey: "taskMarkedComplete") as? Bool {
-                return Task(
-                    id: id,
-                    title: title,
-                    description: description,
-                    ongoingDuration: DateInterval(start: start, end: end),
-                    markedComplete: markedComplete
-                )
-            }
-            return nil
+            return Task(managedObject)
         })
     }
     
@@ -124,14 +110,9 @@ extension CoreDataController: LocalDatabase {
     
     func writeTask(_ task: Task) {
         let context = self.persistentContainer.viewContext
-        let taskEntity = NSEntityDescription.entity(forEntityName: "TaskEntity", in: context)!
-        let newTask = NSManagedObject(entity: taskEntity, insertInto: context)
-        newTask.setValue(task.id, forKey: "taskID")
-        newTask.setValue(task.title, forKey: "taskTitle")
-        newTask.setValue(task.description, forKey: "taskDescription")
-        newTask.setValue(task.ongoingDuration.start, forKey: "taskStart")
-        newTask.setValue(task.ongoingDuration.end, forKey: "taskEnd")
-        newTask.setValue(task.markedComplete, forKey: "taskMarkedComplete")
+        let taskEntity = NSEntityDescription.entity(forEntityName: Task.ENTITY_NAME, in: context)!
+        let managedObject = NSManagedObject(entity: taskEntity, insertInto: context)
+        task.populateManagedObject(managedObject)
         do {
             try context.save()
         } catch let error as NSError {
@@ -141,8 +122,8 @@ extension CoreDataController: LocalDatabase {
     
     func deleteTask(_ task: Task) {
         let context = self.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "TaskEntity")
-        fetchRequest.predicate = NSPredicate(format: "taskID == %@", task.id as CVarArg)
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: Task.ENTITY_NAME)
+        fetchRequest.predicate = NSPredicate(format: "\(Task.StorableAttributes.id.rawValue) == %@", task.id as CVarArg)
         do {
             let tasks = try context.fetch(fetchRequest)
             if let taskToDelete = tasks.first as? NSManagedObject {
@@ -156,16 +137,12 @@ extension CoreDataController: LocalDatabase {
     
     func editTask(_ task: Task) {
         let context = self.persistentContainer.viewContext
-        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: "TaskEntity")
-        fetchRequest.predicate = NSPredicate(format: "taskID == %@", task.id as CVarArg)
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: Task.ENTITY_NAME)
+        fetchRequest.predicate = NSPredicate(format: "\(Task.StorableAttributes.id.rawValue) == %@", task.id as CVarArg)
         do {
             let tasks = try context.fetch(fetchRequest)
             if let taskToEdit = tasks.first as? NSManagedObject {
-                taskToEdit.setValue(task.title, forKey: "taskTitle")
-                taskToEdit.setValue(task.description, forKey: "taskDescription")
-                taskToEdit.setValue(task.ongoingDuration.start, forKey: "taskStart")
-                taskToEdit.setValue(task.ongoingDuration.end, forKey: "taskEnd")
-                taskToEdit.setValue(task.markedComplete, forKey: "taskMarkedComplete")
+                task.populateManagedObject(taskToEdit)
                 try context.save()
             }
         } catch let error as NSError {
