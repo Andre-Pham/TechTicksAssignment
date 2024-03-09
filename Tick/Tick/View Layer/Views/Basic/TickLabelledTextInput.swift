@@ -14,6 +14,7 @@ class TickLabelledTextInput: TickUIView {
     private let stack = TickVStack()
     private let textInput = PaddedTextField()
     private var onSubmit: (() -> Void)? = nil
+    private var onEdit: (() -> Void)? = nil
     private var onFocus: (() -> Void)? = nil
     private var onUnfocus: (() -> Void)? = nil
     public var view: UIView {
@@ -48,6 +49,7 @@ class TickLabelledTextInput: TickUIView {
             .setTextColor(to: TickColors.textDark3)
         
         self.textInput.addTarget(self, action: #selector(self.handleSubmit), for: .editingDidEndOnExit)
+        self.textInput.addTarget(self, action: #selector(self.handleEdit), for: .editingChanged)
         NotificationCenter.default.addObserver(self, selector: #selector(self.textFieldDidBeginEditing), name: UITextField.textDidBeginEditingNotification, object: self.textInput)
         NotificationCenter.default.addObserver(self, selector: #selector(self.textFieldDidEndEditing), name: UITextField.textDidEndEditingNotification, object: self.textInput)
         
@@ -67,6 +69,10 @@ class TickLabelledTextInput: TickUIView {
         self.onSubmit?()
     }
     
+    @objc private func handleEdit() {
+        self.onEdit?()
+    }
+    
     @objc func textFieldDidBeginEditing(notification: NSNotification) {
         self.stack.addBorder(width: 2.0, color: TickColors.textDark1)
         self.onFocus?()
@@ -80,6 +86,12 @@ class TickLabelledTextInput: TickUIView {
     @discardableResult
     func setOnSubmit(_ callback: (() -> Void)?) -> Self {
         self.onSubmit = callback
+        return self
+    }
+    
+    @discardableResult
+    func setOnEdit(_ callback: (() -> Void)?) -> Self {
+        self.onEdit = callback
         return self
     }
     

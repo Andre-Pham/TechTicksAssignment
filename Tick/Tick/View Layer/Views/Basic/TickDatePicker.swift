@@ -12,6 +12,9 @@ class TickDatePicker: TickUIView {
     
     private let datePicker = UIDatePicker()
     private var onDatePicked: ((_ date: Date) -> Void)? = nil
+    public var date: Date {
+        return self.datePicker.date
+    }
     public var view: UIView {
         return self.datePicker
     }
