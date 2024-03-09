@@ -270,20 +270,13 @@ class ViewController: UICollectionViewController, DatabaseListener {
             )
         }
         self.taskListDataSource.apply(snapshot, animatingDifferences: true)
+        self.renderSectionTopHeaderBackgrounds(lenience: 10)
     }
     
-    private func renderSectionHeaderBackgrounds() {
-        let headers = collectionView.visibleSupplementaryViews(ofKind: TaskListSectionHeaderReusableView.ELEMENT_KIND) as! [TaskListSectionHeaderReusableView]
-        for header in headers {
-            header.sectionHeader.setBackgroundColor(to: TickColors.backgroundFill)
-        }
-    }
-    
-    private func renderOnlyTopSectionHeaderBackground() {
+    private func renderSectionTopHeaderBackgrounds(lenience: Double) {
         let headers = collectionView.visibleSupplementaryViews(ofKind: TaskListSectionHeaderReusableView.ELEMENT_KIND) as! [TaskListSectionHeaderReusableView]
         var distancesFromTop = [Double]()
         let inset = Environment.inst.topSafeAreaHeight
-        let lenience = 10.0
         for headerView in headers {
             let distance = collectionView.convert(headerView.frame, to: nil).minY
             distancesFromTop.append(distance - inset)
@@ -304,21 +297,19 @@ class ViewController: UICollectionViewController, DatabaseListener {
         // End of scroll - this means tasks can be edited
         // Since they can be edited, when we animate, we want the section headers to appear to have no background
         // However we still want the pinned one to have a background
-        self.renderOnlyTopSectionHeaderBackground()
+        self.renderSectionTopHeaderBackgrounds(lenience: 10)
     }
     
     override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
         // End of scroll - this means tasks can be edited
         // Since they can be edited, when we animate, we want the section headers to appear to have no background
         // However we still want the pinned one to have a background
-        self.renderOnlyTopSectionHeaderBackground()
+        self.renderSectionTopHeaderBackgrounds(lenience: 10)
     }
     
     override func scrollViewDidScroll(_ scrollView: UIScrollView) {
-        // The user is scrolling - no edits, meaning it makes no difference if section headers have backgrounds or not (tasks aren't animating between headers)
-        // The pinned section header needs a background however
-        // We just render all of them - attempting to render just the top can have funky results if the user jitters the scroll view
-        self.renderSectionHeaderBackgrounds()
+        // A greater lenience is needed for high-speed or jittery scroll movements
+        self.renderSectionTopHeaderBackgrounds(lenience: 80)
     }
     
 }
