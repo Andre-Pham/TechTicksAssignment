@@ -18,3 +18,6 @@
 "label.taskDescription" = "Description";
 "label.fromDate" = "From";
 "label.toDate" = "To";
+"label.delete" = "Delete";
+"label.edit" = "Edit";
+"label.taskOptions" = "Task Options";

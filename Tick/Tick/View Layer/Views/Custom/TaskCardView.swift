@@ -10,7 +10,7 @@ import UIKit
 
 class TaskCardView: TickUIView {
     
-    private let container = TickView()
+    private let container = TickContextMenuView()
     private let columnsStack = TickHStack()
     private let contentStack = TickVStack()
     public let title = TickText()
@@ -64,11 +64,35 @@ class TaskCardView: TickUIView {
             .constrainLeft()
     }
     
-    func setContent(title: String, description: String, duration: String, status: String) {
+    @discardableResult
+    func setOnContextMenuActivation(_ callback: (() -> Void)?) -> Self {
+        self.container.setOnContextMenuActivation({ interaction, location in
+            callback?()
+        })
+        return self
+    }
+    
+    @discardableResult
+    func setOnContextMenuEnd(_ callback: (() -> Void)?) -> Self {
+        self.container.setOnContextMenuEnd({ interaction, configuration, animator in
+            callback?()
+        })
+        return self
+    }
+    
+    @discardableResult
+    func setContextMenu(to menu: UIMenu?) -> Self {
+        self.container.setMenu(to: menu)
+        return self
+    }
+    
+    @discardableResult
+    func setContent(title: String, description: String, duration: String, status: String) -> Self {
         self.title.setText(to: title)
         self.description.setText(to: description)
         self.duration.setText(to: duration)
         self.status.setText(to: status)
+        return self
     }
     
 }

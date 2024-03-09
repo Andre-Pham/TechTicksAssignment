@@ -17,6 +17,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
     private static let SECTION_HEADER_HEIGHT = 36.0
     
     private var root: TickView { return TickView(self.view) }
+    private let safeAreaOverlay = TickView()
     
     private var taskCollection = TaskCollection()
     private var activeSections: [TaskStatus] = [.ongoing, .upcoming, .completed]
@@ -58,13 +59,19 @@ class ViewController: UICollectionViewController, DatabaseListener {
         self.root
             .setBackgroundColor(to: TickColors.backgroundFill)
             .addSubview(TickView(self.collectionView))
+            .addSubview(self.safeAreaOverlay)
         
         self.collectionView.translatesAutoresizingMaskIntoConstraints = false
         TickView(self.collectionView)
             .setBackgroundColor(to: TickColors.backgroundFill)
             .constrainHorizontal()
-            .constrainTop()
-            .constrainBottom(respectSafeArea: false)
+            .constrainVertical(respectSafeArea: false)
+        
+        self.safeAreaOverlay
+            .constrainTop(respectSafeArea: false)
+            .constrainHorizontal()
+            .setHeightConstraint(to: Environment.inst.topSafeAreaHeight)
+            .setBackgroundColor(to: TickColors.backgroundFill)
     }
     
     private func configureCollectionView() {
@@ -123,28 +130,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
     
     private func configureDataSource() {
         let taskCellRegistration = UICollectionView.CellRegistration<TaskCardViewCell, Task> { cell, indexPath, task in
-            cell.card.setContent(title: task.title, description: task.description, duration: task.ongoingDuration.description, status: "TODO")
-            switch task.status {
-            case .upcoming:
-                cell.card.checkBox.removeFromSuperView()
-            case .ongoing:
-                cell.card.checkBox
-                    .setColor(checked: TickColors.completedTask, unchecked: TickColors.ongoingTask)
-                    .setIcon(to: "checkmark")
-                    .setOnRelease({ isChecked in
-                        task.setCompletedStatus(to: isChecked)
-                        self.databaseController?.editTask(task)
-                    })
-            case .completed:
-                cell.card.checkBox
-                    .setColor(checked: TickColors.completedTask, unchecked: TickColors.ongoingTask)
-                    .setIcon(to: "checkmark")
-                    .setState(checked: true)
-                    .setOnRelease({ isChecked in
-                        task.setCompletedStatus(to: isChecked)
-                        self.databaseController?.editTask(task)
-                    })
-            }
+            self.configureTaskCard(cell: cell, task: task)
         }
         self.taskListDataSource = UICollectionViewDiffableDataSource(collectionView: self.collectionView) { [self] collectionView, indexPath, identifier -> UICollectionViewCell in
             let task = self.taskCollection.getTask(id: identifier)
@@ -157,11 +143,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
                     withReuseIdentifier: TaskListHeaderReusableView.REUSE_IDENTIFIER,
                     for: indexPath
                 ) as! TaskListHeaderReusableView
-                view.header.setContent(header: Strings("header.tasks").local)
-                view.header.newTaskButton.setOnTap({
-                    let newController = NewTaskViewController()
-                    self.present(newController, animated: true)
-                })
+                self.configureTaskListHeader(view: view, indexPath: indexPath)
                 return view
             } else if kind == TaskListSectionHeaderReusableView.ELEMENT_KIND {
                 let view = self.collectionView.dequeueReusableSupplementaryView(
@@ -169,21 +151,93 @@ class ViewController: UICollectionViewController, DatabaseListener {
                     withReuseIdentifier: TaskListSectionHeaderReusableView.REUSE_IDENTIFIER,
                     for: indexPath
                 ) as! TaskListSectionHeaderReusableView
-                let taskStatus = self.activeSections[indexPath.section]
-                switch taskStatus {
-                case .upcoming:
-                    view.sectionHeader.setContent(subheader: Strings("taskStatus.upcoming").local.uppercased())
-                    view.sectionHeader.sectionHeader.setTextColor(to: TickColors.upcomingTask)
-                case .ongoing:
-                    view.sectionHeader.setContent(subheader: Strings("taskStatus.ongoing").local.uppercased())
-                    view.sectionHeader.sectionHeader.setTextColor(to: TickColors.ongoingTask)
-                case .completed:
-                    view.sectionHeader.setContent(subheader: Strings("taskStatus.completed").local.uppercased())
-                    view.sectionHeader.sectionHeader.setTextColor(to: TickColors.completedTask)
-                }
+                self.configureTaskListSectionHeader(view: view, indexPath: indexPath)
                 return view
             }
             fatalError("Unrecognized element kind passed")
+        }
+    }
+    
+    private func configureTaskListHeader(view: TaskListHeaderReusableView, indexPath: IndexPath) {
+        view.header.setContent(header: Strings("header.tasks").local)
+        view.header.newTaskButton.setOnTap({
+            let newController = NewTaskViewController()
+            self.present(newController, animated: true)
+        })
+    }
+    
+    private func configureTaskListSectionHeader(view: TaskListSectionHeaderReusableView, indexPath: IndexPath) {
+        let taskStatus = self.activeSections[indexPath.section]
+        switch taskStatus {
+        case .upcoming:
+            view.sectionHeader.setContent(subheader: Strings("taskStatus.upcoming").local.uppercased())
+            view.sectionHeader.sectionHeader.setTextColor(to: TickColors.upcomingTask)
+        case .ongoing:
+            view.sectionHeader.setContent(subheader: Strings("taskStatus.ongoing").local.uppercased())
+            view.sectionHeader.sectionHeader.setTextColor(to: TickColors.ongoingTask)
+        case .completed:
+            view.sectionHeader.setContent(subheader: Strings("taskStatus.completed").local.uppercased())
+            view.sectionHeader.sectionHeader.setTextColor(to: TickColors.completedTask)
+        }
+    }
+    
+    private func configureTaskCard(cell: TaskCardViewCell, task: Task) {
+        cell.card.setContent(title: task.title, description: task.description, duration: task.ongoingDuration.description, status: "TODO")
+        self.configureTaskCardContextMenu(cell: cell, task: task)
+        switch task.status {
+        case .upcoming:
+            cell.card.checkBox.removeFromSuperView()
+            cell.card.setContextMenu(to: nil)
+        case .ongoing:
+            cell.card.checkBox
+                .setColor(checked: TickColors.completedTask, unchecked: TickColors.ongoingTask)
+                .setIcon(to: "checkmark")
+                .setOnRelease({ isChecked in
+                    task.setCompletedStatus(to: isChecked)
+                    self.databaseController?.editTask(task)
+                    self.configureTaskCardContextMenu(cell: cell, task: task)
+                })
+        case .completed:
+            cell.card.checkBox
+                .setColor(checked: TickColors.completedTask, unchecked: TickColors.ongoingTask)
+                .setIcon(to: "checkmark")
+                .setState(checked: true)
+                .setOnRelease({ isChecked in
+                    task.setCompletedStatus(to: isChecked)
+                    self.databaseController?.editTask(task)
+                    self.configureTaskCardContextMenu(cell: cell, task: task)
+                })
+            cell.card.setContextMenu(to: nil)
+        }
+    }
+    
+    private func configureTaskCardContextMenu(cell: TaskCardViewCell, task: Task) {
+        switch task.status {
+        case .upcoming:
+            cell.card.setContextMenu(to: nil)
+        case .ongoing:
+            let editAction = UIAction(title: Strings("label.edit").local, image: UIImage(systemName: "pencil"), attributes: []) { action in
+                print("Edit")
+            }
+            let deleteAction = UIAction(title: Strings("label.delete").local, image: UIImage(systemName: "trash"), attributes: [.destructive]) { action in
+                self.databaseController?.deleteTask(task)
+            }
+            cell.card
+                .setContextMenu(to: UIMenu(title: Strings("label.taskOptions").local, children: [editAction, deleteAction]))
+                .setOnContextMenuActivation({
+                    let sectionHeaders = self.collectionView.visibleSupplementaryViews(ofKind: TaskListSectionHeaderReusableView.ELEMENT_KIND) as! [TaskListSectionHeaderReusableView]
+                    sectionHeaders.forEach({
+                        $0.sectionHeader.animateOpacity(to: 0.0, duration: 0.5)
+                    })
+                })
+                .setOnContextMenuEnd({
+                    let sectionHeaders = self.collectionView.visibleSupplementaryViews(ofKind: TaskListSectionHeaderReusableView.ELEMENT_KIND) as! [TaskListSectionHeaderReusableView]
+                    sectionHeaders.forEach({
+                        $0.sectionHeader.setOpacity(to: 1.0)
+                    })
+                })
+        case .completed:
+            cell.card.setContextMenu(to: nil)
         }
     }
     
