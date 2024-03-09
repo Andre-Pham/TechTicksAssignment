@@ -31,18 +31,45 @@ class ViewController: UICollectionViewController, DatabaseListener {
         let appDelegate = UIApplication.shared.delegate as? AppDelegate
         self.databaseController = appDelegate?.databaseController
         
+        self.setupViews()
+        self.configureCollectionView()
+        self.configureDataSource()
+        self.loadTaskData()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        self.databaseController?.addListener(listener: self)
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        self.databaseController?.removeListener(listener: self)
+    }
+    
+    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
+        super.viewWillTransition(to: size, with: coordinator)
+        coordinator.animate(alongsideTransition: { context in
+            self.collectionView.collectionViewLayout.invalidateLayout()
+        }, completion: nil)
+    }
+    
+    private func setupViews() {
         self.root
             .setBackgroundColor(to: TickColors.backgroundFill)
             .addSubview(TickView(self.collectionView))
         
-        self.collectionView.dataSource = self
-        self.collectionView.delegate = self
         self.collectionView.translatesAutoresizingMaskIntoConstraints = false
         TickView(self.collectionView)
             .setBackgroundColor(to: TickColors.backgroundFill)
             .constrainHorizontal()
             .constrainTop()
             .constrainBottom(respectSafeArea: false)
+    }
+    
+    private func configureCollectionView() {
+        self.collectionView.dataSource = self
+        self.collectionView.delegate = self
         
         self.collectionView.register(
             TaskCardViewCell.self,
@@ -92,9 +119,6 @@ class ViewController: UICollectionViewController, DatabaseListener {
             }
             return section
         }
-        
-        self.configureDataSource()
-        self.loadTaskData()
     }
     
     private func configureDataSource() {
@@ -176,23 +200,6 @@ class ViewController: UICollectionViewController, DatabaseListener {
             )
         }
         self.taskListDataSource.applySnapshotUsingReloadData(snapshot)
-    }
-    
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        self.databaseController?.addListener(listener: self)
-    }
-    
-    override func viewWillDisappear(_ animated: Bool) {
-        super.viewWillDisappear(animated)
-        self.databaseController?.removeListener(listener: self)
-    }
-    
-    override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
-        super.viewWillTransition(to: size, with: coordinator)
-        coordinator.animate(alongsideTransition: { context in
-            self.collectionView.collectionViewLayout.invalidateLayout()
-        }, completion: nil)
     }
     
     func onTaskOperation(operation: DatabaseOperation, tasks: [Task]) {
