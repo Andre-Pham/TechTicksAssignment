@@ -15,6 +15,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
     private static let SECTION_PADDING_LEFT = 14.0
     private static let SECTION_PADDING_RIGHT = 14.0
     private static let SECTION_HEADER_HEIGHT = 36.0
+    private static let HEADER_HEIGHT = 100.0
     
     private var root: TickView { return TickView(self.view) }
     private let safeAreaOverlay = TickView()
@@ -113,7 +114,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
             )
             sectionHeader.pinToVisibleBounds = true
             if sectionIndex == 0 {
-                let mainHeaderSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(100))
+                let mainHeaderSize = NSCollectionLayoutSize(widthDimension: .fractionalWidth(1.0), heightDimension: .absolute(Self.HEADER_HEIGHT))
                 let mainHeader = NSCollectionLayoutBoundarySupplementaryItem(
                     layoutSize: mainHeaderSize,
                     elementKind: TaskListHeaderReusableView.ELEMENT_KIND,
@@ -270,7 +271,56 @@ class ViewController: UICollectionViewController, DatabaseListener {
         }
         self.taskListDataSource.apply(snapshot, animatingDifferences: true)
     }
-
+    
+    private func renderSectionHeaderBackgrounds() {
+        let headers = collectionView.visibleSupplementaryViews(ofKind: TaskListSectionHeaderReusableView.ELEMENT_KIND) as! [TaskListSectionHeaderReusableView]
+        for header in headers {
+            header.sectionHeader.setBackgroundColor(to: TickColors.backgroundFill)
+        }
+    }
+    
+    private func renderOnlyTopSectionHeaderBackground() {
+        let headers = collectionView.visibleSupplementaryViews(ofKind: TaskListSectionHeaderReusableView.ELEMENT_KIND) as! [TaskListSectionHeaderReusableView]
+        var distancesFromTop = [Double]()
+        let inset = Environment.inst.topSafeAreaHeight
+        let lenience = 10.0
+        for headerView in headers {
+            let distance = collectionView.convert(headerView.frame, to: nil).minY
+            distancesFromTop.append(distance - inset)
+        }
+        for headerIndex in headers.indices {
+            let header = headers[headerIndex]
+            let distance = distancesFromTop[headerIndex]
+            let isAtTop = isLessZero(distance - lenience)
+            if isAtTop {
+                header.sectionHeader.setBackgroundColor(to: TickColors.backgroundFill)
+            } else {
+                header.sectionHeader.setBackgroundColor(to: .clear)
+            }
+        }
+    }
+    
+    override func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        // End of scroll - this means tasks can be edited
+        // Since they can be edited, when we animate, we want the section headers to appear to have no background
+        // However we still want the pinned one to have a background
+        self.renderOnlyTopSectionHeaderBackground()
+    }
+    
+    override func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) {
+        // End of scroll - this means tasks can be edited
+        // Since they can be edited, when we animate, we want the section headers to appear to have no background
+        // However we still want the pinned one to have a background
+        self.renderOnlyTopSectionHeaderBackground()
+    }
+    
+    override func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        // The user is scrolling - no edits, meaning it makes no difference if section headers have backgrounds or not (tasks aren't animating between headers)
+        // The pinned section header needs a background however
+        // We just render all of them - attempting to render just the top can have funky results if the user jitters the scroll view
+        self.renderSectionHeaderBackgrounds()
+    }
+    
 }
 
 class TaskListSectionHeaderReusableView: UICollectionReusableView {
