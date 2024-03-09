@@ -8,7 +8,7 @@
 import Foundation
 import CoreData
 
-class Task: ManagedObjectStorable {
+class Task: ManagedObjectStorable, Identifiable {
     
     public let id: UUID
     private(set) var title: String

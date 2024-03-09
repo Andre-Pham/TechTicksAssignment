@@ -9,7 +9,7 @@ import Foundation
 
 class TaskCollection {
     
-    public typealias TaskGrouping = (status: TaskStatus, grouping: [Task])
+    public typealias TaskSection = (status: TaskStatus, tasks: [Task])
     
     private var tasks: [Task]
     
@@ -21,11 +21,15 @@ class TaskCollection {
         self.tasks.append(task)
     }
     
-    func getSectionedTasks(onlyInclude: [TaskStatus]) -> [TaskGrouping] {
-        var result = [TaskGrouping]()
+    func getTask(id: UUID) -> Task? {
+        return self.tasks.first(where: { $0.id == id })
+    }
+    
+    func getSectionedTasks(onlyInclude: [TaskStatus]) -> [TaskSection] {
+        var result = [TaskSection]()
         for status in onlyInclude {
             let section = self.tasks.filter({ $0.status == status })
-            result.append(TaskGrouping(status: status, grouping: section))
+            result.append(TaskSection(status: status, tasks: section))
         }
         return result
     }

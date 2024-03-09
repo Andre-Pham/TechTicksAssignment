@@ -39,34 +39,6 @@ class CoreDataController: NSObject {
         super.init()
     }
     
-    func readAllTasks() -> [Task] {
-        if self.allTickTasksFetchedResultsController == nil {
-            // Instantiate fetch request
-            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: Task.ENTITY_NAME)
-            let nameSortDescriptor = NSSortDescriptor(key: Task.StorableAttributes.start.rawValue, ascending: true)
-            fetchRequest.sortDescriptors = [nameSortDescriptor]
-            self.allTickTasksFetchedResultsController = NSFetchedResultsController<NSManagedObject>(
-                fetchRequest: fetchRequest,
-                managedObjectContext: self.persistentContainer.viewContext,
-                sectionNameKeyPath: nil,
-                cacheName: nil
-            )
-            self.allTickTasksFetchedResultsController?.delegate = self
-            do {
-                try self.allTickTasksFetchedResultsController?.performFetch()
-            } catch {
-                assertionFailure("Fetch request failed: \(error)")
-            }
-        }
-        guard let fetchedTasks = self.allTickTasksFetchedResultsController?.fetchedObjects else {
-            assertionFailure("Fetch request should have been instantiated but wasn't")
-            return [Task]()
-        }
-        return fetchedTasks.compactMap({ managedObject in
-            return Task(managedObject)
-        })
-    }
-    
 }
 extension CoreDataController: LocalDatabase {
     
@@ -106,6 +78,34 @@ extension CoreDataController: LocalDatabase {
     /// Removes a specific listener
     func removeListener(listener: DatabaseListener) {
         self.listeners.removeDelegate(listener)
+    }
+    
+    func readAllTasks() -> [Task] {
+        if self.allTickTasksFetchedResultsController == nil {
+            // Instantiate fetch request
+            let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: Task.ENTITY_NAME)
+            let nameSortDescriptor = NSSortDescriptor(key: Task.StorableAttributes.start.rawValue, ascending: true)
+            fetchRequest.sortDescriptors = [nameSortDescriptor]
+            self.allTickTasksFetchedResultsController = NSFetchedResultsController<NSManagedObject>(
+                fetchRequest: fetchRequest,
+                managedObjectContext: self.persistentContainer.viewContext,
+                sectionNameKeyPath: nil,
+                cacheName: nil
+            )
+            self.allTickTasksFetchedResultsController?.delegate = self
+            do {
+                try self.allTickTasksFetchedResultsController?.performFetch()
+            } catch {
+                assertionFailure("Fetch request failed: \(error)")
+            }
+        }
+        guard let fetchedTasks = self.allTickTasksFetchedResultsController?.fetchedObjects else {
+            assertionFailure("Fetch request should have been instantiated but wasn't")
+            return [Task]()
+        }
+        return fetchedTasks.compactMap({ managedObject in
+            return Task(managedObject)
+        })
     }
     
     func writeTask(_ task: Task) {

@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate, DatabaseListener {
+class ViewController: UICollectionViewController, DatabaseListener {
     
     private static let TASK_CARD_SPACING = 12.0
     private static let SECTION_PADDING_TOP = 0.0
@@ -17,12 +17,11 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     private static let SECTION_HEADER_HEIGHT = 36.0
     
     private var root: TickView { return TickView(self.view) }
-    private let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     
     private var taskCollection = TaskCollection()
-    private var renderedTasks = [TaskCollection.TaskGrouping]()
+    private var activeSections: [TaskStatus] = [.ongoing, .upcoming, .completed]
+    private var taskListDataSource: UICollectionViewDiffableDataSource<TaskStatus, Task.ID>!
     
-    // Core Data
     var listenerType = DatabaseListenerType.task
     weak var databaseController: LocalDatabase?
 
@@ -31,20 +30,6 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         
         let appDelegate = UIApplication.shared.delegate as? AppDelegate
         self.databaseController = appDelegate?.databaseController
-        
-        // Populate task collection with dummy tasks
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd"
-        self.taskCollection.addTask(Task(title: "Shopping", description: "Go shopping for cookies and brownies and lots of cake!", ongoingDuration: DateInterval(start: Date(), duration: 432_000), markedComplete: false))
-        self.taskCollection.addTask(Task(title: "Grocery Shopping", description: "Buy ingredients for the week's meals.", ongoingDuration: DateInterval(start: dateFormatter.date(from: "2024-03-20")!, duration: 86_400), markedComplete: false))
-        self.taskCollection.addTask(Task(title: "Gardening", description: "Prune the roses and prepare soil for spring planting.", ongoingDuration: DateInterval(start: dateFormatter.date(from: "2024-03-21")!, duration: 172_800), markedComplete: false))
-        self.taskCollection.addTask(Task(title: "Paint the Bedroom", description: "Paint the master bedroom with the chosen color scheme.", ongoingDuration: DateInterval(start: dateFormatter.date(from: "2024-03-22")!, duration: 259_200), markedComplete: false))
-        self.taskCollection.addTask(Task(title: "Car Service", description: "Take the car for its annual service and checkup.", ongoingDuration: DateInterval(start: dateFormatter.date(from: "2024-03-24")!, duration: 86_400), markedComplete: false))
-        self.taskCollection.addTask(Task(title: "Book Club Meeting", description: "Host the monthly book club meeting.", ongoingDuration: DateInterval(start: dateFormatter.date(from: "2024-03-27")!, duration: 86_400), markedComplete: false))
-        self.taskCollection.addTask(Task(title: "Spring Cleaning", description: "Deep clean the house for spring, focusing on the attic and garage.", ongoingDuration: DateInterval(start: dateFormatter.date(from: "2024-03-28")!, duration: 432_000), markedComplete: false))
-        self.taskCollection.addTask(Task(title: "Tax Preparation", description: "Gather all documents and complete tax returns.", ongoingDuration: DateInterval(start: dateFormatter.date(from: "2024-03-30")!, duration: 86_400), markedComplete: false))
-        self.taskCollection.addTask(Task(title: "Shopping", description: "Go shopping for cookies and brownies and lots of cake!", ongoingDuration: DateInterval(start: dateFormatter.date(from: "2024-03-31")!, duration: 432_000), markedComplete: true))
-        self.renderedTasks = self.taskCollection.getSectionedTasks(onlyInclude: [.ongoing, .upcoming, .completed])
         
         self.root
             .setBackgroundColor(to: TickColors.backgroundFill)
@@ -107,6 +92,90 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
             }
             return section
         }
+        
+        self.configureDataSource()
+        self.loadTaskData()
+    }
+    
+    private func configureDataSource() {
+        let taskCellRegistration = UICollectionView.CellRegistration<TaskCardViewCell, Task> { cell, indexPath, task in
+            cell.card.setContent(title: task.title, description: task.description, duration: task.ongoingDuration.description, status: "TODO")
+            switch task.status {
+            case .upcoming:
+                cell.card.checkBox.removeFromSuperView()
+            case .ongoing:
+                cell.card.checkBox
+                    .setColor(checked: TickColors.completedTask, unchecked: TickColors.ongoingTask)
+                    .setIcon(to: "checkmark")
+                    .setOnRelease({ isChecked in
+                        task.setCompletedStatus(to: isChecked)
+                        self.databaseController?.editTask(task)
+                    })
+            case .completed:
+                cell.card.checkBox
+                    .setColor(checked: TickColors.completedTask, unchecked: TickColors.ongoingTask)
+                    .setIcon(to: "checkmark")
+                    .setState(checked: true)
+                    .setOnRelease({ isChecked in
+                        task.setCompletedStatus(to: isChecked)
+                        self.databaseController?.editTask(task)
+                    })
+            }
+        }
+        self.taskListDataSource = UICollectionViewDiffableDataSource(collectionView: self.collectionView) { [self] collectionView, indexPath, identifier -> UICollectionViewCell in
+            let task = self.taskCollection.getTask(id: identifier)
+            return self.collectionView.dequeueConfiguredReusableCell(using: taskCellRegistration, for: indexPath, item: task)
+        }
+        self.taskListDataSource.supplementaryViewProvider = { (view, kind, indexPath) in
+            if kind == TaskListHeaderReusableView.ELEMENT_KIND {
+                let view = self.collectionView.dequeueReusableSupplementaryView(
+                    ofKind: kind,
+                    withReuseIdentifier: TaskListHeaderReusableView.REUSE_IDENTIFIER,
+                    for: indexPath
+                ) as! TaskListHeaderReusableView
+                view.header.setContent(header: Strings("header.tasks").local)
+                view.header.newTaskButton.setOnTap({
+                    let newController = NewTaskViewController()
+                    self.present(newController, animated: true)
+                })
+                return view
+            } else if kind == TaskListSectionHeaderReusableView.ELEMENT_KIND {
+                let view = self.collectionView.dequeueReusableSupplementaryView(
+                    ofKind: kind,
+                    withReuseIdentifier: TaskListSectionHeaderReusableView.REUSE_IDENTIFIER,
+                    for: indexPath
+                ) as! TaskListSectionHeaderReusableView
+                let taskStatus = self.activeSections[indexPath.section]
+                switch taskStatus {
+                case .upcoming:
+                    view.sectionHeader.setContent(subheader: Strings("taskStatus.upcoming").local.uppercased())
+                    view.sectionHeader.sectionHeader.setTextColor(to: TickColors.upcomingTask)
+                case .ongoing:
+                    view.sectionHeader.setContent(subheader: Strings("taskStatus.ongoing").local.uppercased())
+                    view.sectionHeader.sectionHeader.setTextColor(to: TickColors.ongoingTask)
+                case .completed:
+                    view.sectionHeader.setContent(subheader: Strings("taskStatus.completed").local.uppercased())
+                    view.sectionHeader.sectionHeader.setTextColor(to: TickColors.completedTask)
+                }
+                return view
+            }
+            fatalError("Unrecognized element kind passed")
+        }
+    }
+    
+    private func loadTaskData() {
+        self.taskCollection = TaskCollection(tasks: self.databaseController!.readAllTasks())
+        let sectionsToRender = self.activeSections
+        let toRender = self.taskCollection.getSectionedTasks(onlyInclude: sectionsToRender)
+        var snapshot = NSDiffableDataSourceSnapshot<TaskStatus, Task.ID>()
+        snapshot.appendSections(sectionsToRender)
+        for taskStatus in sectionsToRender {
+            snapshot.appendItems(
+                toRender.first(where: { $0.status == taskStatus })?.tasks.map({ $0.id }) ?? [],
+                toSection: taskStatus
+            )
+        }
+        self.taskListDataSource.applySnapshotUsingReloadData(snapshot)
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -119,78 +188,6 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
         self.databaseController?.removeListener(listener: self)
     }
     
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
-        return self.renderedTasks.count
-    }
-
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return self.renderedTasks[section].grouping.count
-    }
-
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: TaskCardViewCell.REUSE_IDENTIFIER, for: indexPath) as! TaskCardViewCell
-        let task = self.renderedTasks[indexPath.section].grouping[indexPath.row]
-        cell.card.setContent(title: task.title, description: task.description, duration: task.ongoingDuration.description, status: "TODO")
-        switch task.status {
-        case .upcoming:
-            cell.card.checkBox.removeFromSuperView()
-        case .ongoing:
-            cell.card.checkBox
-                .setColor(checked: TickColors.completedTask, unchecked: TickColors.ongoingTask)
-                .setIcon(to: "checkmark")
-                .setOnRelease({ isChecked in
-                    task.setCompletedStatus(to: isChecked)
-                    self.databaseController?.editTask(task)
-                })
-        case .completed:
-            cell.card.checkBox
-                .setColor(checked: TickColors.completedTask, unchecked: TickColors.ongoingTask)
-                .setIcon(to: "checkmark")
-                .setState(checked: true)
-                .setOnRelease({ isChecked in
-                    task.setCompletedStatus(to: isChecked)
-                    self.databaseController?.editTask(task)
-                })
-        }
-        return cell
-    }
-
-    func collectionView(_ collectionView: UICollectionView, viewForSupplementaryElementOfKind kind: String, at indexPath: IndexPath) -> UICollectionReusableView {
-        if kind == TaskListHeaderReusableView.ELEMENT_KIND {
-            let view = collectionView.dequeueReusableSupplementaryView(
-                ofKind: kind,
-                withReuseIdentifier: TaskListHeaderReusableView.REUSE_IDENTIFIER,
-                for: indexPath
-            ) as! TaskListHeaderReusableView
-            view.header.setContent(header: Strings("header.tasks").local)
-            view.header.newTaskButton.setOnTap({
-                let newController = NewTaskViewController()
-                self.present(newController, animated: true)
-            })
-            return view
-        } else if kind == TaskListSectionHeaderReusableView.ELEMENT_KIND {
-            let view = collectionView.dequeueReusableSupplementaryView(
-                ofKind: kind,
-                withReuseIdentifier: TaskListSectionHeaderReusableView.REUSE_IDENTIFIER,
-                for: indexPath
-            ) as! TaskListSectionHeaderReusableView
-            let taskStatus = self.renderedTasks[indexPath.section].status
-            switch taskStatus {
-            case .upcoming:
-                view.sectionHeader.setContent(subheader: Strings("taskStatus.upcoming").local.uppercased())
-                view.sectionHeader.sectionHeader.setTextColor(to: TickColors.upcomingTask)
-            case .ongoing:
-                view.sectionHeader.setContent(subheader: Strings("taskStatus.ongoing").local.uppercased())
-                view.sectionHeader.sectionHeader.setTextColor(to: TickColors.ongoingTask)
-            case .completed:
-                view.sectionHeader.setContent(subheader: Strings("taskStatus.completed").local.uppercased())
-                view.sectionHeader.sectionHeader.setTextColor(to: TickColors.completedTask)
-            }
-            return view
-        }
-        fatalError("Unrecognized element kind passed")
-    }
-
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
         super.viewWillTransition(to: size, with: coordinator)
         coordinator.animate(alongsideTransition: { context in
@@ -199,11 +196,18 @@ class ViewController: UIViewController, UICollectionViewDataSource, UICollection
     }
     
     func onTaskOperation(operation: DatabaseOperation, tasks: [Task]) {
-        print("onTaskOperation - updates received")
         self.taskCollection = TaskCollection(tasks: tasks)
-        self.renderedTasks = self.taskCollection.getSectionedTasks(onlyInclude: [.ongoing, .upcoming, .completed])
-        self.collectionView.reloadData()
-        self.collectionView.collectionViewLayout.invalidateLayout()
+        let sectionsToRender = self.activeSections
+        let toRender = self.taskCollection.getSectionedTasks(onlyInclude: sectionsToRender)
+        var snapshot = NSDiffableDataSourceSnapshot<TaskStatus, Task.ID>()
+        snapshot.appendSections(sectionsToRender)
+        for taskStatus in sectionsToRender {
+            snapshot.appendItems(
+                toRender.first(where: { $0.status == taskStatus })?.tasks.map({ $0.id }) ?? [],
+                toSection: taskStatus
+            )
+        }
+        self.taskListDataSource.apply(snapshot, animatingDifferences: true)
     }
 
 }

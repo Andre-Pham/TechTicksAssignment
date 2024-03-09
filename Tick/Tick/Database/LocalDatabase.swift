@@ -15,6 +15,7 @@ protocol LocalDatabase: AnyObject {
     func addListener(listener: DatabaseListener)
     func removeListener(listener: DatabaseListener)
     
+    func readAllTasks() -> [Task]
     func writeTask(_ task: Task)
     func deleteTask(_ task: Task)
     func countTasks() -> Int
