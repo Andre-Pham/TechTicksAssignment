@@ -53,6 +53,9 @@ class ViewController: UICollectionViewController, DatabaseListener {
         super.viewWillTransition(to: size, with: coordinator)
         coordinator.animate(alongsideTransition: { context in
             self.collectionView.collectionViewLayout.invalidateLayout()
+            self.safeAreaOverlay
+                .removeHeightConstraint()
+                .setHeightConstraint(to: Environment.inst.topSafeAreaHeight)
         }, completion: nil)
     }
     

@@ -30,8 +30,9 @@ class TaskListHeaderView<T>: TickUIView {
         
         self.stack
             .constrainHorizontal()
-            .setSpacing(to: 12)
+            .addGap(size: 12)
             .addView(self.headerRow)
+            .addGap(size: 12)
             .addView(self.filterControls)
         
         self.headerRow
