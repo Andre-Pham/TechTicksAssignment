@@ -15,7 +15,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
     private static let SECTION_PADDING_LEFT = 14.0
     private static let SECTION_PADDING_RIGHT = 14.0
     private static let SECTION_HEADER_HEIGHT = 36.0
-    private static let HEADER_HEIGHT = 100.0
+    private static let HEADER_HEIGHT = 130.0
     
     private var root: TickView { return TickView(self.view) }
     private let safeAreaOverlay = TickView()
@@ -165,6 +165,18 @@ class ViewController: UICollectionViewController, DatabaseListener {
             let newController = NewTaskViewController()
             self.present(newController, animated: true)
         })
+        view.header.filterControls
+            .setOnTap({ status in
+                let oldSections = self.activeSections
+                if let status {
+                    self.activeSections = [status]
+                } else {
+                    self.activeSections = [.ongoing, .upcoming, .completed]
+                }
+                if oldSections != self.activeSections {
+                    self.refreshTaskList(animate: false)
+                }
+            })
     }
     
     private func configureTaskListSectionHeader(view: TaskListSectionHeaderReusableView, indexPath: IndexPath) {
@@ -187,12 +199,14 @@ class ViewController: UICollectionViewController, DatabaseListener {
         self.configureTaskCardContextMenu(cell: cell, task: task)
         switch task.status {
         case .upcoming:
-            cell.card.checkBox.removeFromSuperView()
+            cell.card.checkBox.setHidden(to: true)
             cell.card.setContextMenu(to: nil)
         case .ongoing:
             cell.card.checkBox
+                .setHidden(to: false)
                 .setColor(checked: TickColors.completedTask, unchecked: TickColors.ongoingTask)
                 .setIcon(to: "checkmark")
+                .setState(checked: false)
                 .setOnRelease({ isChecked in
                     task.setCompletedStatus(to: isChecked)
                     self.databaseController?.editTask(task)
@@ -200,6 +214,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
                 })
         case .completed:
             cell.card.checkBox
+                .setHidden(to: false)
                 .setColor(checked: TickColors.completedTask, unchecked: TickColors.ongoingTask)
                 .setIcon(to: "checkmark")
                 .setState(checked: true)
@@ -257,8 +272,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
         self.taskListDataSource.applySnapshotUsingReloadData(snapshot)
     }
     
-    func onTaskOperation(operation: DatabaseOperation, tasks: [Task]) {
-        self.taskCollection = TaskCollection(tasks: tasks)
+    private func refreshTaskList(animate: Bool = true) {
         let sectionsToRender = self.activeSections
         let toRender = self.taskCollection.getSectionedTasks(onlyInclude: sectionsToRender)
         var snapshot = NSDiffableDataSourceSnapshot<TaskStatus, Task.ID>()
@@ -269,8 +283,13 @@ class ViewController: UICollectionViewController, DatabaseListener {
                 toSection: taskStatus
             )
         }
-        self.taskListDataSource.apply(snapshot, animatingDifferences: true)
+        self.taskListDataSource.apply(snapshot, animatingDifferences: animate)
         self.renderSectionTopHeaderBackgrounds(lenience: 10)
+    }
+    
+    func onTaskOperation(operation: DatabaseOperation, tasks: [Task]) {
+        self.taskCollection = TaskCollection(tasks: tasks)
+        self.refreshTaskList()
     }
     
     private func renderSectionTopHeaderBackgrounds(lenience: Double) {
@@ -336,12 +355,17 @@ class TaskListHeaderReusableView: UICollectionReusableView {
     
     public static let REUSE_IDENTIFIER = UUID().uuidString
     public static let ELEMENT_KIND = UUID().uuidString
-    public let header = TaskListHeaderView()
+    public let header = TaskListHeaderView<TaskStatus?>()
 
     override init(frame: CGRect) {
         super.init(frame: frame)
         self.addSubview(self.header.view)
         self.header.constrainAllSides()
+        self.header.filterControls
+            .addChip(value: nil, label: Strings("filter.all").local.capitalized)
+            .addChip(value: .ongoing, label: Strings("taskStatus.ongoing").local.capitalized)
+            .addChip(value: .upcoming, label: Strings("taskStatus.upcoming").local.capitalized)
+            .addChip(value: .completed, label: Strings("taskStatus.completed").local.capitalized)
     }
 
     required init?(coder aDecoder: NSCoder) {

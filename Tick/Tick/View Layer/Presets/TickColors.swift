@@ -48,5 +48,6 @@ enum TickColors {
     // MARK: - Colors
     
     static let whitePermanent = UIColor(named: "Assets#FFFFFF")!
+    static let blackPermanent = UIColor(named: "Assets#000000")!
     
 }

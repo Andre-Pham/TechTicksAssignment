@@ -133,6 +133,12 @@ extension TickUIViewProtocol {
     }
     
     @discardableResult
+    func setClipsToBounds(to state: Bool) -> Self {
+        self.view.clipsToBounds = state
+        return self
+    }
+    
+    @discardableResult
     func layoutIfNeeded() -> Self {
         self.view.layoutIfNeeded()
         return self

@@ -8,11 +8,16 @@
 import Foundation
 import UIKit
 
-class TaskListHeaderView: TickUIView {
+class TaskListHeaderView<T>: TickUIView {
+    
+    private static var HORIZONTAL_PADDING: Double { 8.0 }
     
     private let container = TickView()
+    private let stack = TickVStack()
+    private let headerRow = TickHStack()
     public let header = TickText()
     public let newTaskButton = TickChipTextButton()
+    public let filterControls = HorizontalChipButtonsView<T>()
     public var view: UIView {
         return self.container.view
     }
@@ -21,25 +26,41 @@ class TaskListHeaderView: TickUIView {
         super.init()
         
         self.container
-            .addSubview(self.header)
-            .addSubview(self.newTaskButton)
+            .addSubview(self.stack)
+        
+        self.stack
+            .constrainHorizontal()
+            .setSpacing(to: 12)
+            .addView(self.headerRow)
+            .addView(self.filterControls)
+        
+        self.headerRow
+            .constrainHorizontal()
+            .addGap(size: Self.HORIZONTAL_PADDING)
+            .addView(self.header)
+            .addSpacer()
+            .addView(self.newTaskButton)
+            .addGap(size: Self.HORIZONTAL_PADDING)
+        
+        self.filterControls
+            .constrainHorizontal(padding: Self.HORIZONTAL_PADDING)
         
         self.header
             .constrainCenterVertical()
-            .constrainLeft(padding: 8)
             .setFont(to: TickFont(font: TickFonts.Inter.Black, size: 48))
         
         self.newTaskButton
             .constrainCenterVertical()
-            .constrainRight(padding: 8)
             .setColor(to: TickColors.primaryComponentFill)
             .setIconColor(to: TickColors.textPrimaryComponent)
             .setIcon(to: "note.text.badge.plus")
             .setLabel(to: Strings("button.new").local)
     }
     
-    func setContent(header: String) {
+    @discardableResult
+    func setContent(header: String) -> Self {
         self.self.header.setText(to: header)
+        return self
     }
     
 }

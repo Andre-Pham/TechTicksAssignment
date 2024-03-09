@@ -29,8 +29,10 @@ class TaskListSectionHeaderView: TickUIView {
             .setFont(to: TickFont(font: TickFonts.Poppins.SemiBold, size: 14))
     }
     
-    func setContent(subheader: String) {
+    @discardableResult
+    func setContent(subheader: String) -> Self {
         self.self.sectionHeader.setText(to: subheader)
+        return self
     }
     
 }

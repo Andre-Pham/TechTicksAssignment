@@ -91,6 +91,17 @@ class TickScrollView: TickUIView {
     }
     
     @discardableResult
+    func setScrollBarVisibility(vertical: Bool? = nil, horizontal: Bool? = nil) -> Self {
+        if let vertical {
+            self.scrollView.showsVerticalScrollIndicator = vertical
+        }
+        if let horizontal {
+            self.scrollView.showsHorizontalScrollIndicator = horizontal
+        }
+        return self
+    }
+    
+    @discardableResult
     func setVerticalBounce(to state: Bool) -> Self {
         self.scrollView.alwaysBounceVertical = state
         return self
@@ -99,6 +110,12 @@ class TickScrollView: TickUIView {
     @discardableResult
     func setHorizontalBounce(to state: Bool) -> Self {
         self.scrollView.alwaysBounceHorizontal = state
+        return self
+    }
+    
+    @discardableResult
+    func setContentSize(to size: CGSize) -> Self {
+        self.scrollView.contentSize = size
         return self
     }
     

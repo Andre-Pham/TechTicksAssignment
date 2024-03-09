@@ -22,6 +22,9 @@ class TickText: TickUIView {
     public var font: UIFont {
         return self.label.font
     }
+    public var intrinsicContentSize: CGSize {
+        return self.label.intrinsicContentSize
+    }
     
     override init() {
         super.init()
