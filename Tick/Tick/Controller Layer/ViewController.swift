@@ -365,10 +365,31 @@ class TaskListHeaderReusableView: UICollectionReusableView {
         self.addSubview(self.header.view)
         self.header.constrainAllSides()
         self.header.filterControls
-            .addChip(value: nil, label: Strings("filter.all").local.capitalized)
-            .addChip(value: .ongoing, label: Strings("taskStatus.ongoing").local.capitalized)
-            .addChip(value: .upcoming, label: Strings("taskStatus.upcoming").local.capitalized)
-            .addChip(value: .completed, label: Strings("taskStatus.completed").local.capitalized)
+            .addChip(
+                value: nil,
+                label: Strings("filter.all").local.capitalized,
+                color: TickColors.textDark2,
+                textColor: TickColors.white,
+                selected: true
+            )
+            .addChip(
+                value: .ongoing,
+                label: Strings("taskStatus.ongoing").local.capitalized,
+                color: TickColors.textDark2,
+                textColor: TickColors.white
+            )
+            .addChip(
+                value: .upcoming,
+                label: Strings("taskStatus.upcoming").local.capitalized,
+                color: TickColors.textDark2,
+                textColor: TickColors.white
+            )
+            .addChip(
+                value: .completed,
+                label: Strings("taskStatus.completed").local.capitalized,
+                color: TickColors.textDark2,
+                textColor: TickColors.white
+            )
     }
 
     required init?(coder aDecoder: NSCoder) {

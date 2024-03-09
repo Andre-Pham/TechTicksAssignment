@@ -607,6 +607,13 @@ extension TickUIViewProtocol {
     }
     
     @discardableResult
+    func removeBorder() -> Self {
+        self.view.layer.borderWidth = 0.0
+        self.view.layer.borderColor = nil
+        return self
+    }
+    
+    @discardableResult
     func addSidedBorder(
         width: CGFloat = 1.0,
         color: UIColor = UIColor.red,

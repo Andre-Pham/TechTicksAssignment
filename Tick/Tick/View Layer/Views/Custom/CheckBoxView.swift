@@ -98,7 +98,7 @@ class CheckBoxView: TickUIView {
     
     private func refresh() {
         if self.isChecked {
-            self.container.addBorder(width: 0.0, color: self.checkedColor)
+            self.container.removeBorder()
             self.container.setBackgroundColor(to: self.checkedColor)
             self.icon.setHidden(to: false)
             self.icon.setColor(to: self.iconColor)

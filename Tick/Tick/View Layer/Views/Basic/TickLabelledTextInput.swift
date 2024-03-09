@@ -79,7 +79,7 @@ class TickLabelledTextInput: TickUIView {
     }
 
     @objc func textFieldDidEndEditing(notification: NSNotification) {
-        self.stack.addBorder(width: 0.0)
+        self.stack.removeBorder()
         self.onUnfocus?()
     }
     
