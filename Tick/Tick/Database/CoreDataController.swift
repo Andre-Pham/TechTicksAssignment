@@ -9,17 +9,21 @@ import CoreData
 
 class CoreDataController: NSObject {
     
+    // MARK: - Constants
+    
     private static let DATA_MODEL_NAME = "TickDataModel"
     
     // MARK: - Properties
     
-    // FetchedResultsControllers
+    /// Cached fetched results controller - stores fetched Task entity NSManagedObjects
     private var allTasksFetchedResultsController: NSFetchedResultsController<NSManagedObject>?
+    /// The operation flags associated with the last operation (reset on every operation)
     private var allTasksFetchedResultsOperationFlags = [DatabaseTaskOperationFlag]()
-    
-    // Other properties
+    /// Database listeners (this notifies them of any changes to the fetched results controller)
     private var listeners = MulticastDelegate<DatabaseListener>()
+    /// The persistent container reference for the associated data model
     private var persistentContainer: NSPersistentContainer
+    /// The child managed context
     private var childManagedContext: NSManagedObjectContext
     
     // MARK: - Constructor
@@ -43,44 +47,26 @@ class CoreDataController: NSObject {
 }
 extension CoreDataController: LocalDatabase {
     
-    /// Checks if there are changes to be saved inside of the view context and then saves, if necessary
-    func saveChanges() {
-        if self.persistentContainer.viewContext.hasChanges {
-            do {
-                try self.persistentContainer.viewContext.save()
-            } catch {
-                assertionFailure("Failed to save changes to Core Data with error: \(error)")
-            }
-        }
-    }
-    
-    /// Saves the child context, hence pushing the changes to the parent context
-    func saveChildToParent() {
-        do {
-            // Saving child managed context pushes it to Core Data
-            try self.childManagedContext.save()
-        }
-        catch {
-            assertionFailure("Failed to save child managed context to Core Data with error: \(error)")
-        }
-    }
-    
-    /// Creates a new listener that either fetches all meals or ingredients
+    /// Register as a listener to the database to receive callbacks from changes
+    /// - Parameters:
+    ///   - listener: The object to listen to database changes
     func addListener(listener: DatabaseListener) {
-        // Adds the new database listener to the list of listeners
         self.listeners.addDelegate(listener)
-        
-        // Provides the listener with the initial immediate results depending on the type
+        // Provides the listener with the initial immediate results
         if listener.listenerType == .task || listener.listenerType == .all {
             listener.onTaskOperation(operation: .update, tasks: self.readAllTasks(), flags: [])
         }
     }
     
-    /// Removes a specific listener
+    /// De-register a listener from the database
+    /// - Parameters:
+    ///   - listener: The listener object to de-register
     func removeListener(listener: DatabaseListener) {
         self.listeners.removeDelegate(listener)
     }
     
+    /// Reads all tasks from persistent storage
+    /// - Returns: The read tasks
     func readAllTasks() -> [Task] {
         if self.allTasksFetchedResultsController == nil {
             // Instantiate fetch request
@@ -109,6 +95,10 @@ extension CoreDataController: LocalDatabase {
         })
     }
     
+    /// Writes a task to persistent storage
+    /// - Parameters:
+    ///   - task: The task to write
+    ///   - flags: Any flags to be associated with the operation (to be received by listeners)
     func writeTask(_ task: Task, flags: [DatabaseTaskOperationFlag] = []) {
         self.allTasksFetchedResultsOperationFlags = flags
         let context = self.persistentContainer.viewContext
@@ -122,6 +112,10 @@ extension CoreDataController: LocalDatabase {
         }
     }
     
+    /// Deletes a task in persistent storage
+    /// - Parameters:
+    ///   - task: The task to delete
+    ///   - flags: Any flags to be associated with the operation (to be received by listeners)
     func deleteTask(_ task: Task, flags: [DatabaseTaskOperationFlag] = []) {
         self.allTasksFetchedResultsOperationFlags = flags
         let context = self.persistentContainer.viewContext
@@ -138,6 +132,9 @@ extension CoreDataController: LocalDatabase {
         }
     }
     
+    /// Deletes all tasks in persistent storage
+    /// - Parameters:
+    ///   - flags: Any flags to be associated with the operation (to be received by listeners)
     func deleteAllTasks(flags: [DatabaseTaskOperationFlag] = []) {
         self.allTasksFetchedResultsOperationFlags = flags
         let context = self.persistentContainer.viewContext
@@ -155,6 +152,10 @@ extension CoreDataController: LocalDatabase {
         }
     }
     
+    /// Edits a task in persistent storage
+    /// - Parameters:
+    ///   - task: The task to edit
+    ///   - flags: Any flags to be associated with the operation (to be received by listeners)
     func editTask(_ task: Task, flags: [DatabaseTaskOperationFlag] = []) {
         self.allTasksFetchedResultsOperationFlags = flags
         let context = self.persistentContainer.viewContext
@@ -171,6 +172,8 @@ extension CoreDataController: LocalDatabase {
         }
     }
     
+    /// Counts all tasks in persistent storage
+    /// - Returns: The number of tasks saved
     func countTasks() -> Int {
         return self.readAllTasks().count
     }

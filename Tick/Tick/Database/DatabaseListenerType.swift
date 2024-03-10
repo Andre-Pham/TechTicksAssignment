@@ -7,9 +7,12 @@
 
 import Foundation
 
+/// The types of database operations a database listener can listen to.
 enum DatabaseListenerType {
     
+    /// Task-related operations
     case task
+    /// All operations
     case all
     
 }

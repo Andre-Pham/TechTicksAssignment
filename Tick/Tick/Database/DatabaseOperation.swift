@@ -7,6 +7,8 @@
 
 import Foundation
 
+/// The types of database operations. Gives context to listeners on what they're responding to.
+/// Reads don't trigger listener callbacks so they're not included.
 enum DatabaseOperation {
     
     case write
