@@ -44,13 +44,9 @@ class NewTaskViewController: UIViewController {
     private var buttonStackActive: Bool {
         return self.buttonStack.hasSuperView
     }
-    weak var databaseController: LocalDatabase?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        let appDelegate = UIApplication.shared.delegate as? AppDelegate
-        self.databaseController = appDelegate?.databaseController
         
         self.root
             .setBackgroundColor(to: TickColors.foregroundFill)
@@ -212,17 +208,10 @@ class NewTaskViewController: UIViewController {
             .setOnTap({
                 if let task = self.createTaskFromInputs() {
                     if self.inEditMode {
-                        self.databaseController?.editTask(task, flags: [.taskContentEdit])
-                        LocalNotificationsController.inst.removeNotification(id: task.id.uuidString)
+                        Session.inst.editTaskContent(task)
                     } else {
-                        self.databaseController?.writeTask(task, flags: [.taskCreation])
+                        Session.inst.createTask(task)
                     }
-                    LocalNotificationsController.inst.scheduleNotification(
-                        id: task.id.uuidString,
-                        title: task.title,
-                        body: task.description,
-                        trigger: task.ongoingDuration.start
-                    )
                     self.dismiss(animated: true)
                 }
             })

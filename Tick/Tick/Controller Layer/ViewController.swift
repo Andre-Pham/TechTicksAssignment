@@ -26,13 +26,9 @@ class ViewController: UICollectionViewController, DatabaseListener {
     private var taskListDataSource: UICollectionViewDiffableDataSource<TaskStatus, Task.ID>!
     
     var listenerType = DatabaseListenerType.task
-    weak var databaseController: LocalDatabase?
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        let appDelegate = UIApplication.shared.delegate as? AppDelegate
-        self.databaseController = appDelegate?.databaseController
         
         self.setupViews()
         self.configureCollectionView()
@@ -50,12 +46,12 @@ class ViewController: UICollectionViewController, DatabaseListener {
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        self.databaseController?.addListener(listener: self)
+        Session.inst.listenToDatabase(self)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-        self.databaseController?.removeListener(listener: self)
+        Session.inst.endListenToDatabase(self)
     }
     
     override func viewWillTransition(to size: CGSize, with coordinator: UIViewControllerTransitionCoordinator) {
@@ -223,7 +219,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
                 .setState(checked: false)
                 .setOnRelease({ isChecked in
                     task.setCompletedStatus(to: isChecked)
-                    self.databaseController?.editTask(task, flags: [.taskCompletionEdit])
+                    Session.inst.editTaskCompletion(task)
                     self.configureTaskCardContextMenu(cell: cell, task: task)
                 })
         case .completed:
@@ -235,7 +231,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
                 .setState(checked: true)
                 .setOnRelease({ isChecked in
                     task.setCompletedStatus(to: isChecked)
-                    self.databaseController?.editTask(task, flags: [.taskCompletionEdit])
+                    Session.inst.editTaskCompletion(task)
                     self.configureTaskCardContextMenu(cell: cell, task: task)
                 })
         }
@@ -248,8 +244,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
             self.present(newController, animated: true)
         }
         let deleteAction = UIAction(title: Strings("label.delete").local, image: UIImage(systemName: "trash"), attributes: [.destructive]) { action in
-            self.databaseController?.deleteTask(task, flags: [.taskDeletion])
-            LocalNotificationsController.inst.removeNotification(id: task.id.uuidString)
+            Session.inst.deleteTask(task)
         }
         switch task.status {
         case .upcoming:
@@ -275,7 +270,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
     }
     
     private func loadTaskData() {
-        self.taskCollection = TaskCollection(tasks: self.databaseController!.readAllTasks())
+        self.taskCollection = TaskCollection(tasks: Session.inst.readAllTasks())
         let sectionsToRender = self.activeSections
         let toRender = self.taskCollection.getSectionedTasks(onlyInclude: sectionsToRender)
         var snapshot = NSDiffableDataSourceSnapshot<TaskStatus, Task.ID>()
