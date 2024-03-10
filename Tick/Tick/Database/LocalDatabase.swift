@@ -18,6 +18,7 @@ protocol LocalDatabase: AnyObject {
     func readAllTasks() -> [Task]
     func writeTask(_ task: Task, flags: [DatabaseTaskOperationFlag])
     func deleteTask(_ task: Task, flags: [DatabaseTaskOperationFlag])
+    func deleteAllTasks(flags: [DatabaseTaskOperationFlag])
     func countTasks() -> Int
     func editTask(_ task: Task, flags: [DatabaseTaskOperationFlag])
     

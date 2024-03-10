@@ -138,6 +138,23 @@ extension CoreDataController: LocalDatabase {
         }
     }
     
+    func deleteAllTasks(flags: [DatabaseTaskOperationFlag] = []) {
+        self.allTasksFetchedResultsOperationFlags = flags
+        let context = self.persistentContainer.viewContext
+        let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: Task.ENTITY_NAME)
+        fetchRequest.includesPropertyValues = false
+        do {
+            let items = try context.fetch(fetchRequest) as! [NSManagedObject]
+            for item in items {
+                context.delete(item)
+            }
+            // Save the context to persist changes
+            try context.save()
+        } catch let error as NSError {
+            assertionFailure("Could not delete all tasks with error: \(error), \(error.userInfo)")
+        }
+    }
+    
     func editTask(_ task: Task, flags: [DatabaseTaskOperationFlag] = []) {
         self.allTasksFetchedResultsOperationFlags = flags
         let context = self.persistentContainer.viewContext
