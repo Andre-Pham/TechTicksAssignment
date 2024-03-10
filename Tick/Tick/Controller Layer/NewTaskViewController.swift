@@ -218,6 +218,7 @@ class NewTaskViewController: UIViewController {
                 if let modifiedTask, modifiedTask.dataMatches(task: self.taskInEditing!) {
                     self.removeButtonStack()
                 } else if modifiedTask == nil {
+                    self.addButtonStack()
                     self.removeSaveButton()
                 }
             }
