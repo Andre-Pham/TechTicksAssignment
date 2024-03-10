@@ -9,6 +9,10 @@ import XCTest
 
 final class TickUITests: XCTestCase {
     
+    // Note to reader:
+    // This is a starting point for UI tests. It's by no means exhaustive.
+    // It serves a starting point for how a full suite of UI tests would be implemented.
+    
     let app = XCUIApplication()
 
     override func setUpWithError() throws {
