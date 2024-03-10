@@ -98,6 +98,7 @@ class NewTaskViewController: UIViewController {
             .setFont(to: TickFont(font: TickFonts.Poppins.Medium, size: 14))
         
         self.titleEntry
+            .setAccessibilityIdentifier(to: "TITLE_ENTRY")
             .constrainHorizontal()
             .setLabel(to: Strings("label.taskName").local)
             .setOnEdit({
@@ -106,6 +107,7 @@ class NewTaskViewController: UIViewController {
             })
         
         self.descriptionEntry
+            .setAccessibilityIdentifier(to: "DESCRIPTION_ENTRY")
             .constrainHorizontal()
             .setLabel(to: Strings("label.taskDescription").local)
             .setOnEdit({
@@ -196,13 +198,14 @@ class NewTaskViewController: UIViewController {
                 .setLabel(to: Strings("button.revert").local)
                 .setFont(to: TickFont(font: TickFonts.Poppins.Bold, size: 18), color: TickColors.textSecondaryComponent)
                 .setOnTap({
-                    self.updateTaskStatusIndicator()
                     self.matchEntriesToTaskInEditing()
+                    self.updateTaskStatusIndicator()
                     self.updateButtonStack()
                 })
         }
         
         self.saveButton
+            .setAccessibilityIdentifier(to: "SAVE_TASK_BUTTON")
             .setColor(to: TickColors.primaryComponentFill)
             .setLabel(to: Strings("button.save").local)
             .setFont(to: TickFont(font: TickFonts.Poppins.Bold, size: 18), color: TickColors.textPrimaryComponent)
@@ -294,7 +297,7 @@ class NewTaskViewController: UIViewController {
                 if let modifiedTask, modifiedTask.dataMatches(task: self.taskInEditing!) {
                     self.removeButtonStack()
                 } else if modifiedTask == nil {
-                    self.addButtonStack()
+                    self.addButtonStack(removeSaveButton: true)
                     self.removeSaveButton()
                 }
             }
@@ -307,12 +310,15 @@ class NewTaskViewController: UIViewController {
         }
     }
     
-    private func addButtonStack() {
+    private func addButtonStack(removeSaveButton: Bool = false) {
         guard !self.buttonStackActive else {
             return
         }
         self.scrollStack.insertView(self.buttonStack, at: self.scrollStack.viewCount)
         self.buttonStack.constrainHorizontal()
+        if removeSaveButton && self.saveButtonActive {
+            self.saveButton.removeFromSuperView()
+        }
         self.buttonStack.animateEntrance(onCompletion: {
             self.scroll.scrollToBottomAnimated()
         })
@@ -356,6 +362,10 @@ class NewTaskViewController: UIViewController {
         // 2. The description is allowed to be empty
         // 3. The end date must be after the start date
         guard end > start else {
+            return nil
+        }
+        // 4. The task can't in the future AND completed already - only ongoing tasks can be completed
+        if start > Date() && isCompleted {
             return nil
         }
         let ongoingDuration = DateInterval(start: start, end: end)

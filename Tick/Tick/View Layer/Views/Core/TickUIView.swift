@@ -712,6 +712,12 @@ extension TickUIViewProtocol {
         return self
     }
     
+    @discardableResult
+    func setAccessibilityIdentifier(to identifier: String) -> Self {
+        self.view.accessibilityIdentifier = identifier
+        return self
+    }
+    
     // MARK: - Animations
     
     @discardableResult

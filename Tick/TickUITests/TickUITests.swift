@@ -8,26 +8,44 @@
 import XCTest
 
 final class TickUITests: XCTestCase {
+    
+    let app = XCUIApplication()
 
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
+        app.launch()
     }
 
     override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        
     }
-
-    func testExample() throws {
-        // UI tests must launch the application that they test.
-        let app = XCUIApplication()
-        app.launch()
-
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+    
+    func testCreateTask() throws {
+        let newTaskButton = app.otherElements["NEW_TASK_BUTTON"]
+        newTaskButton.tap()
+        let titleEntry = app.otherElements["TITLE_ENTRY"]
+        XCTAssertTrue(titleEntry.exists)
+        titleEntry.tap()
+        titleEntry.typeText("Task Name")
+        let descriptionEntry = app.otherElements["DESCRIPTION_ENTRY"]
+        XCTAssertTrue(descriptionEntry.exists)
+        descriptionEntry.tap()
+        descriptionEntry.typeText("Task Description")
+        app.buttons["return"].tap()
+        let saveButton = app.buttons["SAVE_TASK_BUTTON"]
+        XCTAssertTrue(saveButton.exists)
+        saveButton.tap()
+        let savedTask = app.staticTexts["Task Description"]
+        XCTAssertTrue(savedTask.exists)
+    }
+    
+    func testDeleteTask() throws {
+        let savedTask = app.staticTexts["Task Description"].firstMatch
+        XCTAssertTrue(savedTask.exists)
+        savedTask.press(forDuration: 2.0)
+        let contextMenuDeleteButton = app.buttons["Delete"]
+        XCTAssertTrue(contextMenuDeleteButton.exists)
+        contextMenuDeleteButton.tap()
     }
 
     func testLaunchPerformance() throws {

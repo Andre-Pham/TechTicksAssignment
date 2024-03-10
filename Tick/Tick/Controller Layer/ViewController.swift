@@ -173,10 +173,12 @@ class ViewController: UICollectionViewController, DatabaseListener {
     
     private func configureTaskListHeader(view: TaskListHeaderReusableView, indexPath: IndexPath) {
         view.header.setContent(header: Strings("header.tasks").local)
-        view.header.newTaskButton.setOnTap({
-            let newController = NewTaskViewController()
-            self.present(newController, animated: true)
-        })
+        view.header.newTaskButton
+            .setAccessibilityIdentifier(to: "NEW_TASK_BUTTON")
+            .setOnTap({
+                let newController = NewTaskViewController()
+                self.present(newController, animated: true)
+            })
         view.header.filterControls
             .setOnTap({ status in
                 let oldSections = self.activeSections
@@ -214,6 +216,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
             cell.card.checkBox.setHidden(to: true)
         case .ongoing:
             cell.card.checkBox
+                .setAccessibilityIdentifier(to: "ONGOING_CHECKBOX")
                 .setHidden(to: false)
                 .setColor(checked: TickColors.completedTask, unchecked: TickColors.ongoingTask)
                 .setIcon(to: "checkmark")
@@ -225,6 +228,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
                 })
         case .completed:
             cell.card.checkBox
+                .setAccessibilityIdentifier(to: "COMPLETED_CHECKBOX")
                 .setHidden(to: false)
                 .setColor(checked: TickColors.completedTask, unchecked: TickColors.ongoingTask)
                 .setIcon(to: "checkmark")
