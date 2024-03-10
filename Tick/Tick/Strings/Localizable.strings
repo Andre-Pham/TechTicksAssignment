@@ -7,8 +7,12 @@
 */
 
 "header.tasks" = "Tasks";
+"header.editTask" = "Edit Task";
+"header.newTask" = "New Task";
 
 "button.new" = "New";
+"button.save" = "Save";
+"button.revert" = "Revert";
 
 "taskStatus.upcoming" = "upcoming";
 "taskStatus.ongoing" = "ongoing";

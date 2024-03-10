@@ -68,7 +68,7 @@ class NewTaskViewController: UIViewController {
         self.header
             .constrainLeft()
             .setFont(to: TickFont(font: TickFonts.Inter.Black, size: 48))
-            .setText(to: self.inEditMode ? "Edit Task" : "New Task") // TODO: String resource
+            .setText(to: self.inEditMode ? Strings("header.editTask").local : Strings("header.newTask").local)
         
         self.titleEntry
             .constrainHorizontal()
@@ -143,7 +143,7 @@ class NewTaskViewController: UIViewController {
         if self.inEditMode {
             self.revertButton
                 .setColor(to: TickColors.secondaryComponentFill)
-                .setLabel(to: "Revert") // TODO: String resource
+                .setLabel(to: Strings("button.revert").local)
                 .setFont(to: TickFont(font: TickFonts.Poppins.Bold, size: 18), color: TickColors.textSecondaryComponent)
                 .setOnTap({
                     self.matchEntriesToTaskInEditing()
@@ -153,7 +153,7 @@ class NewTaskViewController: UIViewController {
         
         self.saveButton
             .setColor(to: TickColors.primaryComponentFill)
-            .setLabel(to: "Save") // TODO: String resource
+            .setLabel(to: Strings("button.save").local)
             .setFont(to: TickFont(font: TickFonts.Poppins.Bold, size: 18), color: TickColors.textPrimaryComponent)
             .setOnTap({
                 if let task = self.createTaskFromInputs() {
