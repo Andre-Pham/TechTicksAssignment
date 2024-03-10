@@ -13,7 +13,11 @@ class NewTaskViewController: UIViewController {
     private var root: TickView { return TickView(self.view) }
     private let scroll = TickScrollView()
     private let scrollStack = TickVStack()
+    private let headerSection = TickVStack()
     private let header = TickText()
+    private let statusStack = TickHStack()
+    private let statusPrefix = TickText()
+    private let statusIndicator = TickText()
     private let titleEntry = TickLabelledTextInput()
     private let descriptionEntry = TickLabelledTextInput()
     private let dateStack = TickVStack()
@@ -59,21 +63,41 @@ class NewTaskViewController: UIViewController {
             .constrainTop(padding: TickDimensions.screenContentPaddingVertical, toContentLayoutGuide: true)
             .constrainBottom(respectSafeArea: false, toContentLayoutGuide: true)
             .setSpacing(to: 20)
-            .addView(self.header)
+            .addView(self.headerSection)
             .addView(self.titleEntry)
             .addView(self.descriptionEntry)
             .addView(self.dateStack)
             .addGap(size: 20)
+        
+        self.headerSection
+            .constrainHorizontal()
+            .addView(self.header)
+            .addView(self.statusStack)
         
         self.header
             .constrainLeft()
             .setFont(to: TickFont(font: TickFonts.Inter.Black, size: 48))
             .setText(to: self.inEditMode ? Strings("header.editTask").local : Strings("header.newTask").local)
         
+        self.statusStack
+            .constrainLeft()
+            .addView(self.statusPrefix)
+            .addView(self.statusIndicator)
+            .addSpacer()
+        
+        self.statusPrefix
+            .setFont(to: TickFont(font: TickFonts.Poppins.Medium, size: 14))
+            .setTextColor(to: TickColors.textDark2)
+            .setText(to: Strings("label.taskStatus").local + ": ")
+        
+        self.statusIndicator
+            .setFont(to: TickFont(font: TickFonts.Poppins.Medium, size: 14))
+        
         self.titleEntry
             .constrainHorizontal()
             .setLabel(to: Strings("label.taskName").local)
             .setOnEdit({
+                self.updateTaskStatusIndicator()
                 self.updateButtonStack()
             })
         
@@ -81,6 +105,7 @@ class NewTaskViewController: UIViewController {
             .constrainHorizontal()
             .setLabel(to: Strings("label.taskDescription").local)
             .setOnEdit({
+                self.updateTaskStatusIndicator()
                 self.updateButtonStack()
             })
         
@@ -118,6 +143,7 @@ class NewTaskViewController: UIViewController {
                         self.endDatePicker.setDate(to: newEndDate)
                     }
                 }
+                self.updateTaskStatusIndicator()
                 self.updateButtonStack()
             })
         
@@ -129,6 +155,7 @@ class NewTaskViewController: UIViewController {
         self.endDatePicker
             .setDate(to: self.getDefaultEndDate())
             .setOnDatePicked({ date in
+                self.updateTaskStatusIndicator()
                 self.updateButtonStack()
             })
         
@@ -146,6 +173,7 @@ class NewTaskViewController: UIViewController {
                 .setLabel(to: Strings("button.revert").local)
                 .setFont(to: TickFont(font: TickFonts.Poppins.Bold, size: 18), color: TickColors.textSecondaryComponent)
                 .setOnTap({
+                    self.updateTaskStatusIndicator()
                     self.matchEntriesToTaskInEditing()
                     self.updateButtonStack()
                 })
@@ -172,6 +200,8 @@ class NewTaskViewController: UIViewController {
                     self.dismiss(animated: true)
                 }
             })
+        
+        self.updateTaskStatusIndicator()
         
         // If the user taps anywhere on-screen, cancel the keyboard
         // Note the keyboard dismissal callback triggers first, then the tap
@@ -206,6 +236,29 @@ class NewTaskViewController: UIViewController {
         // By default, tasks will last from now to 1h in the future
         let calendar = Calendar.current
         return calendar.date(byAdding: .hour, value: 1, to: start) ?? start
+    }
+    
+    private func updateTaskStatusIndicator() {
+        if let task = self.createTaskFromInputs() {
+            switch task.status {
+            case .upcoming:
+                self.statusIndicator
+                    .setText(to: Strings("taskStatus.upcoming").local.uppercased())
+                    .setTextColor(to: TickColors.upcomingTask)
+            case .ongoing:
+                self.statusIndicator
+                    .setText(to: Strings("taskStatus.ongoing").local.uppercased())
+                    .setTextColor(to: TickColors.ongoingTask)
+            case .completed:
+                self.statusIndicator
+                    .setText(to: Strings("taskStatus.completed").local.uppercased())
+                    .setTextColor(to: TickColors.completedTask)
+            }
+        } else {
+            self.statusIndicator
+                .setText(to: Strings("label.invalid").local.uppercased())
+                .setTextColor(to: TickColors.warning)
+        }
     }
     
     private func updateButtonStack() {

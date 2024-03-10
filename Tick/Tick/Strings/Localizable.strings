@@ -25,5 +25,7 @@
 "label.delete" = "Delete";
 "label.edit" = "Edit";
 "label.taskOptions" = "Task Options";
+"label.invalid" = "Invalid";
+"label.taskStatus" = "Task Status";
 
 "filter.all" = "all";
