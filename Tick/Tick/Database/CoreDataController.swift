@@ -19,6 +19,8 @@ class CoreDataController: NSObject {
     private var allTasksFetchedResultsController: NSFetchedResultsController<NSManagedObject>?
     /// The operation flags associated with the last operation (reset on every operation)
     private var allTasksFetchedResultsOperationFlags = [DatabaseTaskOperationFlag]()
+    /// Tracks the batch of operations that occurs between `controllerDidChangeContent` callbacks
+    private var operationsSinceLastContentChange = [DatabaseOperation]()
     /// Database listeners (this notifies them of any changes to the fetched results controller)
     private var listeners = MulticastDelegate<DatabaseListener>()
     /// The persistent container reference for the associated data model
@@ -54,7 +56,7 @@ extension CoreDataController: LocalDatabase {
         self.listeners.addDelegate(listener)
         // Provides the listener with the initial immediate results
         if listener.listenerType == .task || listener.listenerType == .all {
-            listener.onTaskOperation(operation: .update, tasks: self.readAllTasks(), flags: [])
+            listener.onTaskOperation(operations: [], tasks: self.readAllTasks(), flags: [])
         }
     }
     
@@ -181,28 +183,30 @@ extension CoreDataController: LocalDatabase {
 }
 extension CoreDataController: NSFetchedResultsControllerDelegate {
     
-    // TODO: Replace with this
+    /// Called whenever individual objects change
     func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
         switch type {
         case .insert:
-            print("Object was added")
+            self.operationsSinceLastContentChange.append(.insert)
         case .delete:
-            print("Object was deleted")
+            self.operationsSinceLastContentChange.append(.delete)
         case .update:
-            print("Object was updated")
+            self.operationsSinceLastContentChange.append(.update)
         case .move:
-            print("Object was moved")
+            self.operationsSinceLastContentChange.append(.move)
         @unknown default:
-            fatalError("Unhandled change type: \(type)")
+            return
         }
     }
     
     /// Called whenever the FetchedResultsController detects a change to the result of its fetch
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
+        let operations = self.operationsSinceLastContentChange
+        self.operationsSinceLastContentChange.removeAll()
         if controller == self.allTasksFetchedResultsController {
             self.listeners.invoke() { listener in
                 if listener.listenerType == .task || listener.listenerType == .all {
-                    listener.onTaskOperation(operation: .update, tasks: self.readAllTasks(), flags: self.allTasksFetchedResultsOperationFlags)
+                    listener.onTaskOperation(operations: operations, tasks: self.readAllTasks(), flags: self.allTasksFetchedResultsOperationFlags)
                 }
             }
         }

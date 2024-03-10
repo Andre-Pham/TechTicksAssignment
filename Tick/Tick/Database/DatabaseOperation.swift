@@ -11,8 +11,9 @@ import Foundation
 /// Reads don't trigger listener callbacks so they're not included.
 enum DatabaseOperation {
     
-    case write
+    case insert
     case delete
     case update
+    case move
     
 }

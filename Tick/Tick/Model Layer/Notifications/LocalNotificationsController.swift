@@ -45,12 +45,18 @@ class LocalNotificationsController: NSObject, UNUserNotificationCenterDelegate {
         guard self.authorizationGranted else {
             return
         }
+        // Configure the notification content
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
         content.sound = UNNotificationSound.default
+        // Badges are always 1 or none
+        // Badge count has to be determined at the time the notification is scheduled
+        // You can't increment it because you won't know the badge count at the time the notification triggers
+        // (E.g. if you schedule a badge of 2 and the user opens the app just before it triggers, hence resetting the badge count, the scheduled badge of 2 is incorrect)
+        // For dynamic badge counts a server is needed
         content.badge = 1
-        
+        // Configure and add the request
         let calendar = Calendar.current
         let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: trigger)
         let request = UNNotificationRequest(

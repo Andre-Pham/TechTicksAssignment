@@ -410,7 +410,7 @@ class TasksCollectionViewController: UICollectionViewController, DatabaseListene
     ///   - operation: The operation of what was completed (causing the callback)
     ///   - tasks: All tasks post-change
     ///   - flags: Any flags passed by the operation to inform how this responder behaves
-    func onTaskOperation(operation: DatabaseOperation, tasks: [Task], flags: [DatabaseTaskOperationFlag]) {
+    func onTaskOperation(operations: [DatabaseOperation], tasks: [Task], flags: [DatabaseTaskOperationFlag]) {
         self.taskCollection = TaskCollection(tasks: tasks)
         if flags.contains(.taskContentEdit) {
             // Existent tasks' content was edited - we have to reload the data (redraw the cells)

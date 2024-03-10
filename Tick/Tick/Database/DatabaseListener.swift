@@ -19,6 +19,6 @@ protocol DatabaseListener {
     ///   - operation: The operation type that triggered the callback
     ///   - tasks: All the tasks stored in the database after the operation's changes
     ///   - flags: Any flags associated with the operation to inform how this responder behaves
-    func onTaskOperation(operation: DatabaseOperation, tasks: [Task], flags: [DatabaseTaskOperationFlag])
+    func onTaskOperation(operations: [DatabaseOperation], tasks: [Task], flags: [DatabaseTaskOperationFlag])
     
 }
