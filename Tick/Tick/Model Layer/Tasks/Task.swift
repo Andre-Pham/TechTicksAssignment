@@ -8,13 +8,20 @@
 import Foundation
 import CoreData
 
+/// Represents a real-life task ("to-do item").
 class Task: ManagedObjectStorable, Identifiable {
     
+    /// Unique identifier
     public let id: UUID
+    /// The task's title
     private(set) var title: String
+    /// The task's description
     private(set) var description: String
+    /// The duration of the task - start and end dates
     private(set) var ongoingDuration: DateInterval
+    /// If the task has been marked as complete
     private(set) var markedComplete: Bool
+    /// The status of the task
     public var status: TaskStatus {
         if self.markedComplete {
             return .completed
@@ -22,12 +29,15 @@ class Task: ManagedObjectStorable, Identifiable {
         let nowIsBeforeStartDate = Date() < self.ongoingDuration.start
         return nowIsBeforeStartDate ? .upcoming : .ongoing
     }
+    /// If the task may be edited
     public var canBeEdited: Bool {
-        return self.status == .ongoing
+        return self.status == .upcoming
     }
+    /// If the task is allowed to be checked as complete/incomplete
     public var canBeChecked: Bool {
         return self.status == .ongoing || self.status == .completed
     }
+    /// The task's duration as a formatted string
     public var formattedOngoingDuration: String {
         let dayFormatter = DateFormatter()
         dayFormatter.dateFormat = "E d MMM" // For day part
@@ -57,6 +67,9 @@ class Task: ManagedObjectStorable, Identifiable {
         self.markedComplete = markedComplete
     }
     
+    /// Mark the task as complete/incomplete
+    /// - Parameters:
+    ///   - completed: True if the task is completed
     func setCompletedStatus(to completed: Bool) {
         guard self.canBeChecked else {
             return
@@ -64,6 +77,11 @@ class Task: ManagedObjectStorable, Identifiable {
         self.markedComplete = completed
     }
     
+    /// Check if two tasks contain the same data
+    /// Has no requirement they have the same id
+    /// - Parameters:
+    ///   - task: The task to compare agains
+    /// - Returns: True if their information is the same
     func dataMatches(task: Task) -> Bool {
         return (
             self.title == task.title
@@ -75,6 +93,7 @@ class Task: ManagedObjectStorable, Identifiable {
     
     // MARK: - ManagedObjectStorable
     
+    /// Attributes stored in a NSManagedObject in a Core Data entity
     public enum StorableAttributes: String {
         case id = "taskID"
         case title = "taskTitle"
@@ -84,6 +103,7 @@ class Task: ManagedObjectStorable, Identifiable {
         case markedComplete = "taskMarkedComplete"
     }
     
+    /// The Core Data entity this represents
     public static let ENTITY_NAME = "TaskEntity"
     
     required init?(_ managedObject: NSManagedObject) {
@@ -102,6 +122,9 @@ class Task: ManagedObjectStorable, Identifiable {
         self.markedComplete = markedComplete
     }
     
+    /// Populates a managed object with this task's data to be stored in Core Data
+    /// - Parameters:
+    ///   - managedObject: The managed object to have its value set
     func populateManagedObject(_ managedObject: NSManagedObject) {
         managedObject.setValue(self.id, forKey: StorableAttributes.id.rawValue)
         managedObject.setValue(self.title, forKey: StorableAttributes.title.rawValue)

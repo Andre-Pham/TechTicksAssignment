@@ -9,15 +9,18 @@ import Foundation
 import UserNotifications
 import UIKit
 
+/// A controller for managing the application's local notifications.
 class LocalNotificationsController: NSObject, UNUserNotificationCenterDelegate {
     
     /// Singleton instance
     public static let inst = LocalNotificationsController()
     
+    /// True if authorization has been granted to trigger notifications (alert, sound, badge)
     private(set) var authorizationGranted = false
     
     private override init() { }
     
+    /// Requests for the app to have permission to trigger notifications
     func requestAuthorization() {
         UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
             self.authorizationGranted = granted
@@ -27,10 +30,17 @@ class LocalNotificationsController: NSObject, UNUserNotificationCenterDelegate {
         }
     }
     
+    /// Reset the app's notification badge to nothing
     func resetBadgeCount() {
         UIApplication.shared.applicationIconBadgeNumber = 0
     }
 
+    /// Schedule a new notification
+    /// - Parameters:
+    ///   - id: The id of the notification (may be referenced when deleting notifications)
+    ///   - title: The notification banner title
+    ///   - body: The notification banner's body text
+    ///   - trigger: The exact date/time to trigger at (to the minute)
     func scheduleNotification(id: String, title: String, body: String, trigger: Date) {
         guard self.authorizationGranted else {
             return
@@ -56,24 +66,33 @@ class LocalNotificationsController: NSObject, UNUserNotificationCenterDelegate {
         }
     }
     
+    /// De-schedules a notification based on its id
+    /// - Parameters:
+    ///   - id: The id of the notification to be removed
     func removeNotification(id: String) {
         self.removeNotifications(ids: [id])
     }
     
+    /// De-schedules notifications based on their id
+    /// - Parameters:
+    ///   - ids: The ids of the notifications to be removed
     func removeNotifications(ids: [String]) {
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ids)
     }
     
+    /// De-schedules all scheduled notifications
     func removeAllNotifications() {
         UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
     }
     
+    /// Callback conforming to UNUserNotificationCenterDelegate on how to handle notifications when the app is in the foreground
     func userNotificationCenter(_ center: UNUserNotificationCenter, willPresent notification: UNNotification, withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
         // Handles notification delivery while the app is in the foreground
         // We want notifications to still trigger
         completionHandler([.banner, .sound])
     }
     
+    /// Callback conforming to UNUserNotificationCenterDelegate for after a notification has been received while the app is in the foreground
     func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse, withCompletionHandler completionHandler: @escaping () -> Void) {
         completionHandler()
     }

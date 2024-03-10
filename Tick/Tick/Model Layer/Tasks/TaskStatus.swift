@@ -7,6 +7,7 @@
 
 import Foundation
 
+/// The states of a tasks' status.
 enum TaskStatus: CaseIterable {
     
     case upcoming
