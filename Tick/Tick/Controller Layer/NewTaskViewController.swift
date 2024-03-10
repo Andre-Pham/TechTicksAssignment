@@ -159,9 +159,16 @@ class NewTaskViewController: UIViewController {
                 if let task = self.createTaskFromInputs() {
                     if self.inEditMode {
                         self.databaseController?.editTask(task, flags: [.taskContentEdit])
+                        LocalNotificationsController.inst.removeNotification(id: task.id.uuidString)
                     } else {
                         self.databaseController?.writeTask(task, flags: [.taskCreation])
                     }
+                    LocalNotificationsController.inst.scheduleNotification(
+                        id: task.id.uuidString,
+                        title: task.title,
+                        body: task.description,
+                        trigger: task.ongoingDuration.start
+                    )
                     self.dismiss(animated: true)
                 }
             })

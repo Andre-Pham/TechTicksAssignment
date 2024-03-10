@@ -242,6 +242,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
             }
             let deleteAction = UIAction(title: Strings("label.delete").local, image: UIImage(systemName: "trash"), attributes: [.destructive]) { action in
                 self.databaseController?.deleteTask(task, flags: [.taskDeletion])
+                LocalNotificationsController.inst.removeNotification(id: task.id.uuidString)
             }
             cell.card
                 .setContextMenu(to: UIMenu(title: Strings("label.taskOptions").local, children: [editAction, deleteAction]))
