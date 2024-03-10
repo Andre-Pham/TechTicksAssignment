@@ -212,7 +212,6 @@ class ViewController: UICollectionViewController, DatabaseListener {
         switch task.status {
         case .upcoming:
             cell.card.checkBox.setHidden(to: true)
-            cell.card.setContextMenu(to: nil)
         case .ongoing:
             cell.card.checkBox
                 .setHidden(to: false)
@@ -235,41 +234,40 @@ class ViewController: UICollectionViewController, DatabaseListener {
                     self.databaseController?.editTask(task, flags: [.taskCompletionEdit])
                     self.configureTaskCardContextMenu(cell: cell, task: task)
                 })
-            cell.card.setContextMenu(to: nil)
         }
     }
     
     private func configureTaskCardContextMenu(cell: TaskCardViewCell, task: Task) {
+        let editAction = UIAction(title: Strings("label.edit").local, image: UIImage(systemName: "pencil"), attributes: []) { action in
+            let newController = NewTaskViewController()
+            newController.setToEdit(task: task)
+            self.present(newController, animated: true)
+        }
+        let deleteAction = UIAction(title: Strings("label.delete").local, image: UIImage(systemName: "trash"), attributes: [.destructive]) { action in
+            self.databaseController?.deleteTask(task, flags: [.taskDeletion])
+            LocalNotificationsController.inst.removeNotification(id: task.id.uuidString)
+        }
         switch task.status {
         case .upcoming:
-            cell.card.setContextMenu(to: nil)
+            cell.card.setContextMenu(to: UIMenu(title: Strings("label.taskOptions").local, children: [editAction, deleteAction]))
         case .ongoing:
-            let editAction = UIAction(title: Strings("label.edit").local, image: UIImage(systemName: "pencil"), attributes: []) { action in
-                let newController = NewTaskViewController()
-                newController.setToEdit(task: task)
-                self.present(newController, animated: true)
-            }
-            let deleteAction = UIAction(title: Strings("label.delete").local, image: UIImage(systemName: "trash"), attributes: [.destructive]) { action in
-                self.databaseController?.deleteTask(task, flags: [.taskDeletion])
-                LocalNotificationsController.inst.removeNotification(id: task.id.uuidString)
-            }
-            cell.card
-                .setContextMenu(to: UIMenu(title: Strings("label.taskOptions").local, children: [editAction, deleteAction]))
-                .setOnContextMenuActivation({
-                    let sectionHeaders = self.collectionView.visibleSupplementaryViews(ofKind: TaskListSectionHeaderReusableView.ELEMENT_KIND) as! [TaskListSectionHeaderReusableView]
-                    sectionHeaders.forEach({
-                        $0.sectionHeader.animateOpacity(to: 0.0, duration: 0.5)
-                    })
-                })
-                .setOnContextMenuEnd({
-                    let sectionHeaders = self.collectionView.visibleSupplementaryViews(ofKind: TaskListSectionHeaderReusableView.ELEMENT_KIND) as! [TaskListSectionHeaderReusableView]
-                    sectionHeaders.forEach({
-                        $0.sectionHeader.setOpacity(to: 1.0)
-                    })
-                })
+            cell.card.setContextMenu(to: UIMenu(title: Strings("label.taskOptions").local, children: [deleteAction]))
         case .completed:
-            cell.card.setContextMenu(to: nil)
+            cell.card.setContextMenu(to: UIMenu(title: Strings("label.taskOptions").local, children: [deleteAction]))
         }
+        cell.card
+            .setOnContextMenuActivation({
+                let sectionHeaders = self.collectionView.visibleSupplementaryViews(ofKind: TaskListSectionHeaderReusableView.ELEMENT_KIND) as! [TaskListSectionHeaderReusableView]
+                sectionHeaders.forEach({
+                    $0.sectionHeader.animateOpacity(to: 0.0, duration: 0.5)
+                })
+            })
+            .setOnContextMenuEnd({
+                let sectionHeaders = self.collectionView.visibleSupplementaryViews(ofKind: TaskListSectionHeaderReusableView.ELEMENT_KIND) as! [TaskListSectionHeaderReusableView]
+                sectionHeaders.forEach({
+                    $0.sectionHeader.setOpacity(to: 1.0)
+                })
+            })
     }
     
     private func loadTaskData() {
