@@ -27,5 +27,6 @@
 "label.taskOptions" = "Task Options";
 "label.invalid" = "Invalid";
 "label.taskStatus" = "Task Status";
+"label.alreadyCompleted" = "Already Completed";
 
 "filter.all" = "all";

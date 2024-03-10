@@ -27,6 +27,9 @@ class NewTaskViewController: UIViewController {
     private let endDateStack = TickHStack()
     private let endDateLabel = TickText()
     private let endDatePicker = TickDatePicker()
+    private let preCompletedStack = TickHStack()
+    private let preCompletedLabel = TickText()
+    private let preCompletedCheckBox = CheckBoxView()
     private let buttonStack = TickHStack()
     private let saveButton = TickButton()
     private let revertButton = TickButton()
@@ -67,6 +70,7 @@ class NewTaskViewController: UIViewController {
             .addView(self.titleEntry)
             .addView(self.descriptionEntry)
             .addView(self.dateStack)
+            .addView(self.preCompletedStack)
             .addGap(size: 20)
         
         self.headerSection
@@ -115,6 +119,12 @@ class NewTaskViewController: UIViewController {
             .addView(self.startDateStack)
             .addView(self.endDateStack)
         
+        self.preCompletedStack
+            .constrainHorizontal()
+            .addView(self.preCompletedLabel)
+            .addSpacer()
+            .addView(self.preCompletedCheckBox)
+        
         self.startDateStack
             .constrainHorizontal()
             .setSpacing(to: 16)
@@ -130,7 +140,7 @@ class NewTaskViewController: UIViewController {
         self.startDateLabel
             .setFont(to: TickFont(font: TickFonts.Poppins.Medium, size: 14))
             .setTextColor(to: TickColors.textDark2)
-            .setText(to: Strings("label.fromDate").local)
+            .setText(to: Strings("label.fromDate").local + ":")
         
         self.startDatePicker
             .setDate(to: self.getDefaultStartDate())
@@ -150,11 +160,24 @@ class NewTaskViewController: UIViewController {
         self.endDateLabel
             .setFont(to: TickFont(font: TickFonts.Poppins.Medium, size: 14))
             .setTextColor(to: TickColors.textDark2)
-            .setText(to: Strings("label.toDate").local)
+            .setText(to: Strings("label.toDate").local + ":")
         
         self.endDatePicker
             .setDate(to: self.getDefaultEndDate())
             .setOnDatePicked({ date in
+                self.updateTaskStatusIndicator()
+                self.updateButtonStack()
+            })
+        
+        self.preCompletedLabel
+            .setFont(to: TickFont(font: TickFonts.Poppins.Medium, size: 14))
+            .setTextColor(to: TickColors.textDark2)
+            .setText(to: Strings("label.alreadyCompleted").local + ":")
+        
+        self.preCompletedCheckBox
+            .setColor(checked: TickColors.completedTask, unchecked: TickColors.textDark2)
+            .setIcon(to: "checkmark")
+            .setOnRelease({ isChecked in
                 self.updateTaskStatusIndicator()
                 self.updateButtonStack()
             })
@@ -325,6 +348,7 @@ class NewTaskViewController: UIViewController {
         let description = self.descriptionEntry.text.trimmingCharacters(in: .whitespacesAndNewlines)
         let start = self.startDatePicker.date
         let end = self.endDatePicker.date
+        let isCompleted = self.preCompletedCheckBox.isChecked
         // 1. The task must at least have a title
         guard !title.isEmpty else {
             return nil
@@ -341,7 +365,7 @@ class NewTaskViewController: UIViewController {
             title: title,
             description: description,
             ongoingDuration: ongoingDuration,
-            markedComplete: false // Tasks are marked incomplete by default
+            markedComplete: isCompleted
         )
     }
     
@@ -354,6 +378,7 @@ class NewTaskViewController: UIViewController {
         self.descriptionEntry.setText(to: task.description)
         self.startDatePicker.setDate(to: task.ongoingDuration.start)
         self.endDatePicker.setDate(to: task.ongoingDuration.end)
+        self.preCompletedCheckBox.setState(checked: task.markedComplete)
     }
     
 }
