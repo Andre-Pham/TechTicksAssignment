@@ -212,7 +212,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
                 .setState(checked: false)
                 .setOnRelease({ isChecked in
                     task.setCompletedStatus(to: isChecked)
-                    self.databaseController?.editTask(task)
+                    self.databaseController?.editTask(task, flags: [.taskCompletionEdit])
                     self.configureTaskCardContextMenu(cell: cell, task: task)
                 })
         case .completed:
@@ -223,7 +223,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
                 .setState(checked: true)
                 .setOnRelease({ isChecked in
                     task.setCompletedStatus(to: isChecked)
-                    self.databaseController?.editTask(task)
+                    self.databaseController?.editTask(task, flags: [.taskCompletionEdit])
                     self.configureTaskCardContextMenu(cell: cell, task: task)
                 })
             cell.card.setContextMenu(to: nil)
@@ -236,10 +236,12 @@ class ViewController: UICollectionViewController, DatabaseListener {
             cell.card.setContextMenu(to: nil)
         case .ongoing:
             let editAction = UIAction(title: Strings("label.edit").local, image: UIImage(systemName: "pencil"), attributes: []) { action in
-                print("Edit")
+                let newController = NewTaskViewController()
+                newController.setToEdit(task: task)
+                self.present(newController, animated: true)
             }
             let deleteAction = UIAction(title: Strings("label.delete").local, image: UIImage(systemName: "trash"), attributes: [.destructive]) { action in
-                self.databaseController?.deleteTask(task)
+                self.databaseController?.deleteTask(task, flags: [.taskDeletion])
             }
             cell.card
                 .setContextMenu(to: UIMenu(title: Strings("label.taskOptions").local, children: [editAction, deleteAction]))
@@ -290,9 +292,13 @@ class ViewController: UICollectionViewController, DatabaseListener {
         self.renderSectionTopHeaderBackgrounds(lenience: 10)
     }
     
-    func onTaskOperation(operation: DatabaseOperation, tasks: [Task]) {
+    func onTaskOperation(operation: DatabaseOperation, tasks: [Task], flags: [DatabaseTaskOperationFlag]) {
         self.taskCollection = TaskCollection(tasks: tasks)
-        self.refreshTaskList()
+        if flags.contains(.taskContentEdit) {
+            self.collectionView.reloadData()
+        } else {
+            self.refreshTaskList()
+        }
     }
     
     private func renderSectionTopHeaderBackgrounds(lenience: Double) {

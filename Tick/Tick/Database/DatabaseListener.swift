@@ -11,6 +11,6 @@ protocol DatabaseListener {
     
     var listenerType: DatabaseListenerType { get set }
     
-    func onTaskOperation(operation: DatabaseOperation, tasks: [Task])
+    func onTaskOperation(operation: DatabaseOperation, tasks: [Task], flags: [DatabaseTaskOperationFlag])
     
 }

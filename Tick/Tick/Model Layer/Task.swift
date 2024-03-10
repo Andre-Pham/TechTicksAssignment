@@ -44,6 +44,15 @@ class Task: ManagedObjectStorable, Identifiable {
         self.markedComplete = completed
     }
     
+    func dataMatches(task: Task) -> Bool {
+        return (
+            self.title == task.title
+            && self.description == task.description
+            && self.ongoingDuration == task.ongoingDuration
+            && self.markedComplete == task.markedComplete
+        )
+    }
+    
     // MARK: - ManagedObjectStorable
     
     public enum StorableAttributes: String {

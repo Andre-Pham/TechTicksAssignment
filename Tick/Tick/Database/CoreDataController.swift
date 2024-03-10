@@ -14,12 +14,13 @@ class CoreDataController: NSObject {
     // MARK: - Properties
     
     // FetchedResultsControllers
-    var allTickTasksFetchedResultsController: NSFetchedResultsController<NSManagedObject>?
+    private var allTasksFetchedResultsController: NSFetchedResultsController<NSManagedObject>?
+    private var allTasksFetchedResultsOperationFlags = [DatabaseTaskOperationFlag]()
     
     // Other properties
-    var listeners = MulticastDelegate<DatabaseListener>()
-    var persistentContainer: NSPersistentContainer
-    var childManagedContext: NSManagedObjectContext
+    private var listeners = MulticastDelegate<DatabaseListener>()
+    private var persistentContainer: NSPersistentContainer
+    private var childManagedContext: NSManagedObjectContext
     
     // MARK: - Constructor
     
@@ -71,7 +72,7 @@ extension CoreDataController: LocalDatabase {
         
         // Provides the listener with the initial immediate results depending on the type
         if listener.listenerType == .task || listener.listenerType == .all {
-            listener.onTaskOperation(operation: .update, tasks: self.readAllTasks())
+            listener.onTaskOperation(operation: .update, tasks: self.readAllTasks(), flags: [])
         }
     }
     
@@ -81,25 +82,25 @@ extension CoreDataController: LocalDatabase {
     }
     
     func readAllTasks() -> [Task] {
-        if self.allTickTasksFetchedResultsController == nil {
+        if self.allTasksFetchedResultsController == nil {
             // Instantiate fetch request
             let fetchRequest = NSFetchRequest<NSManagedObject>(entityName: Task.ENTITY_NAME)
             let nameSortDescriptor = NSSortDescriptor(key: Task.StorableAttributes.start.rawValue, ascending: true)
             fetchRequest.sortDescriptors = [nameSortDescriptor]
-            self.allTickTasksFetchedResultsController = NSFetchedResultsController<NSManagedObject>(
+            self.allTasksFetchedResultsController = NSFetchedResultsController<NSManagedObject>(
                 fetchRequest: fetchRequest,
                 managedObjectContext: self.persistentContainer.viewContext,
                 sectionNameKeyPath: nil,
                 cacheName: nil
             )
-            self.allTickTasksFetchedResultsController?.delegate = self
+            self.allTasksFetchedResultsController?.delegate = self
             do {
-                try self.allTickTasksFetchedResultsController?.performFetch()
+                try self.allTasksFetchedResultsController?.performFetch()
             } catch {
                 assertionFailure("Fetch request failed: \(error)")
             }
         }
-        guard let fetchedTasks = self.allTickTasksFetchedResultsController?.fetchedObjects else {
+        guard let fetchedTasks = self.allTasksFetchedResultsController?.fetchedObjects else {
             assertionFailure("Fetch request should have been instantiated but wasn't")
             return [Task]()
         }
@@ -108,7 +109,8 @@ extension CoreDataController: LocalDatabase {
         })
     }
     
-    func writeTask(_ task: Task) {
+    func writeTask(_ task: Task, flags: [DatabaseTaskOperationFlag] = []) {
+        self.allTasksFetchedResultsOperationFlags = flags
         let context = self.persistentContainer.viewContext
         let taskEntity = NSEntityDescription.entity(forEntityName: Task.ENTITY_NAME, in: context)!
         let managedObject = NSManagedObject(entity: taskEntity, insertInto: context)
@@ -120,7 +122,8 @@ extension CoreDataController: LocalDatabase {
         }
     }
     
-    func deleteTask(_ task: Task) {
+    func deleteTask(_ task: Task, flags: [DatabaseTaskOperationFlag] = []) {
+        self.allTasksFetchedResultsOperationFlags = flags
         let context = self.persistentContainer.viewContext
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: Task.ENTITY_NAME)
         fetchRequest.predicate = NSPredicate(format: "\(Task.StorableAttributes.id.rawValue) == %@", task.id as CVarArg)
@@ -135,7 +138,8 @@ extension CoreDataController: LocalDatabase {
         }
     }
     
-    func editTask(_ task: Task) {
+    func editTask(_ task: Task, flags: [DatabaseTaskOperationFlag] = []) {
+        self.allTasksFetchedResultsOperationFlags = flags
         let context = self.persistentContainer.viewContext
         let fetchRequest = NSFetchRequest<NSFetchRequestResult>(entityName: Task.ENTITY_NAME)
         fetchRequest.predicate = NSPredicate(format: "\(Task.StorableAttributes.id.rawValue) == %@", task.id as CVarArg)
@@ -157,12 +161,28 @@ extension CoreDataController: LocalDatabase {
 }
 extension CoreDataController: NSFetchedResultsControllerDelegate {
     
+    // TODO: Replace with this
+    func controller(_ controller: NSFetchedResultsController<NSFetchRequestResult>, didChange anObject: Any, at indexPath: IndexPath?, for type: NSFetchedResultsChangeType, newIndexPath: IndexPath?) {
+        switch type {
+        case .insert:
+            print("Object was added")
+        case .delete:
+            print("Object was deleted")
+        case .update:
+            print("Object was updated")
+        case .move:
+            print("Object was moved")
+        @unknown default:
+            fatalError("Unhandled change type: \(type)")
+        }
+    }
+    
     /// Called whenever the FetchedResultsController detects a change to the result of its fetch
     func controllerDidChangeContent(_ controller: NSFetchedResultsController<NSFetchRequestResult>) {
-        if controller == allTickTasksFetchedResultsController {
+        if controller == self.allTasksFetchedResultsController {
             self.listeners.invoke() { listener in
                 if listener.listenerType == .task || listener.listenerType == .all {
-                    listener.onTaskOperation(operation: .update, tasks: self.readAllTasks())
+                    listener.onTaskOperation(operation: .update, tasks: self.readAllTasks(), flags: self.allTasksFetchedResultsOperationFlags)
                 }
             }
         }
