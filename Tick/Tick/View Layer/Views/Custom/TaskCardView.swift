@@ -16,7 +16,6 @@ class TaskCardView: TickUIView {
     public let title = TickText()
     public let description = TickText()
     public let duration = TickText()
-    public let status = TickText()
     public let checkBox = CheckBoxView()
     public var view: UIView {
         return self.container.view
@@ -38,28 +37,22 @@ class TaskCardView: TickUIView {
             .addView(self.checkBox)
         
         self.contentStack
-            .setSpacing(to: 2)
-            .addView(self.status)
             .addView(self.title)
             .addView(self.description)
+            .addGap(size: 10)
             .addView(self.duration)
-        
-        self.status
-            .setFont(to: TickFont(font: TickFonts.Poppins.Light, size: 12))
-            .setTextColor(to: TickColors.textDark3)
-            .constrainLeft()
         
         self.title
             .setFont(to: TickFont(font: TickFonts.Poppins.SemiBold, size: 18))
             .constrainLeft()
         
         self.description
-            .setFont(to: TickFont(font: TickFonts.Poppins.Medium, size: 14))
+            .setFont(to: TickFont(font: TickFonts.Poppins.Medium, size: 15))
             .setTextColor(to: TickColors.textDark3)
             .constrainLeft()
         
         self.duration
-            .setFont(to: TickFont(font: TickFonts.Poppins.Light, size: 12))
+            .setFont(to: TickFont(font: TickFonts.Poppins.Light, size: 14))
             .setTextColor(to: TickColors.textDark3)
             .constrainLeft()
     }
@@ -87,11 +80,10 @@ class TaskCardView: TickUIView {
     }
     
     @discardableResult
-    func setContent(title: String, description: String, duration: String, status: String) -> Self {
+    func setContent(title: String, description: String, duration: String) -> Self {
         self.title.setText(to: title)
         self.description.setText(to: description)
         self.duration.setText(to: duration)
-        self.status.setText(to: status)
         return self
     }
     

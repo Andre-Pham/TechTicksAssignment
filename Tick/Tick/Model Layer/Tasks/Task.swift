@@ -28,6 +28,26 @@ class Task: ManagedObjectStorable, Identifiable {
     public var canBeChecked: Bool {
         return self.status == .ongoing || self.status == .completed
     }
+    public var formattedOngoingDuration: String {
+        let dayFormatter = DateFormatter()
+        dayFormatter.dateFormat = "E d MMM" // For day part
+        let timeFormatter = DateFormatter()
+        timeFormatter.dateFormat = "h:mm a" // For time part
+        timeFormatter.amSymbol = "AM"
+        timeFormatter.pmSymbol = "PM"
+        let startDay = dayFormatter.string(from: self.ongoingDuration.start)
+        let startTime = timeFormatter.string(from: self.ongoingDuration.start)
+        let endDay = dayFormatter.string(from: self.ongoingDuration.end)
+        let endTime = timeFormatter.string(from: self.ongoingDuration.end)
+        let formattedInterval: String
+        if startDay == endDay {
+            // If the start and end days are the same, you might want to format it differently
+            formattedInterval = "\(startDay) \(startTime) - \(endTime)"
+        } else {
+            formattedInterval = "\(startDay) \(startTime) - \(endDay) \(endTime)"
+        }
+        return formattedInterval
+    }
     
     init(id: UUID = UUID(), title: String, description: String, ongoingDuration: DateInterval, markedComplete: Bool) {
         self.id = id

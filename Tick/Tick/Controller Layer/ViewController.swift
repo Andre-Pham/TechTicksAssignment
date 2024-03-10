@@ -198,7 +198,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
     }
     
     private func configureTaskCard(cell: TaskCardViewCell, task: Task) {
-        cell.card.setContent(title: task.title, description: task.description, duration: task.ongoingDuration.description, status: "TODO")
+        cell.card.setContent(title: task.title, description: task.description, duration: task.formattedOngoingDuration)
         self.configureTaskCardContextMenu(cell: cell, task: task)
         switch task.status {
         case .upcoming:
