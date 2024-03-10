@@ -1,5 +1,5 @@
 //
-//  ViewController.swift
+//  TasksCollectionViewController.swift
 //  Tick
 //
 //  Created by Andre Pham on 8/3/2024.
@@ -7,7 +7,7 @@
 
 import UIKit
 
-class ViewController: UICollectionViewController, DatabaseListener {
+class TasksCollectionViewController: UICollectionViewController, DatabaseListener {
     
     private static let TASK_CARD_SPACING = 12.0
     private static let SECTION_PADDING_TOP = 0.0
@@ -172,7 +172,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
         view.header.newTaskButton
             .setAccessibilityIdentifier(to: "NEW_TASK_BUTTON")
             .setOnTap({
-                let newController = NewTaskViewController()
+                let newController = TaskFormViewController()
                 self.present(newController, animated: true)
             })
         view.header.filterControls
@@ -239,7 +239,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
     
     private func configureTaskCardContextMenu(cell: TaskCardViewCell, task: Task) {
         let editAction = UIAction(title: Strings("label.edit").local, image: UIImage(systemName: "pencil"), attributes: []) { action in
-            let newController = NewTaskViewController()
+            let newController = TaskFormViewController()
             newController.setToEdit(task: task)
             self.present(newController, animated: true)
         }

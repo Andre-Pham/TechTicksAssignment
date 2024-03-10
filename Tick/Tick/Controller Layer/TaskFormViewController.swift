@@ -1,5 +1,5 @@
 //
-//  NewTaskViewController.swift
+//  TaskFormViewController.swift
 //  Tick
 //
 //  Created by Andre Pham on 8/3/2024.
@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-class NewTaskViewController: UIViewController {
+class TaskFormViewController: UIViewController {
     
     private var root: TickView { return TickView(self.view) }
     private let scroll = TickScrollView()
