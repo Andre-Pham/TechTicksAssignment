@@ -20,6 +20,7 @@ class ViewController: UICollectionViewController, DatabaseListener {
     private var root: TickView { return TickView(self.view) }
     private let safeAreaOverlay = TickView()
     
+    private let minuteMonitor = MinuteMonitor()
     private var taskCollection = TaskCollection()
     private var activeSections: [TaskStatus] = [.ongoing, .upcoming, .completed]
     private var taskListDataSource: UICollectionViewDiffableDataSource<TaskStatus, Task.ID>!
@@ -37,6 +38,14 @@ class ViewController: UICollectionViewController, DatabaseListener {
         self.configureCollectionView()
         self.configureDataSource()
         self.loadTaskData()
+        
+        self.minuteMonitor.startMonitoring {
+            let tasksToRedraw = self.taskCollection.getTasks(triggeringAt: Date())
+            if !tasksToRedraw.isEmpty {
+                self.collectionView.reloadData()
+                self.refreshTaskList()
+            }
+        }
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -297,9 +306,8 @@ class ViewController: UICollectionViewController, DatabaseListener {
         self.taskCollection = TaskCollection(tasks: tasks)
         if flags.contains(.taskContentEdit) {
             self.collectionView.reloadData()
-        } else {
-            self.refreshTaskList()
         }
+        self.refreshTaskList()
     }
     
     private func renderSectionTopHeaderBackgrounds(lenience: Double) {
