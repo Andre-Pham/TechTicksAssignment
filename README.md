@@ -4,7 +4,7 @@
 
 An engaging and intuitive task management app designed for iOS.
 
-See [Tech Assignment - iOS.pdf](Documentation/Tech Assignment - iOS.pdf) for specifications.
+See **Documentation/Tech Assignment - iOS.pdf** for specifications.
 
 # Documentation
 
