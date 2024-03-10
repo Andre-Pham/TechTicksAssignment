@@ -8,7 +8,10 @@
 import Foundation
 import UIKit
 
+/// View controller for the form fields that make up a task. By default creates a new task. Call `setToEdit(:Task)` to edit a task instead.
 class TaskFormViewController: UIViewController {
+    
+    // MARK: - Properties
     
     private var root: TickView { return TickView(self.view) }
     private let scroll = TickScrollView()
@@ -34,19 +37,30 @@ class TaskFormViewController: UIViewController {
     private let saveButton = TickButton()
     private let revertButton = TickButton()
     
+    /// The task being edited (if any)
     private var taskInEditing: Task? = nil
+    /// If this is controller is editing a task (as opposed to creating a new one) - affects views and behaviour
     private var inEditMode: Bool {
         return self.taskInEditing != nil
     }
+    /// True if the save button is visible and active
     private var saveButtonActive: Bool {
         return self.saveButton.hasSuperView && self.buttonStackActive
     }
+    /// True if the button stack (revert and save buttons) is visible and active
     private var buttonStackActive: Bool {
         return self.buttonStack.hasSuperView
     }
     
+    // MARK: - Functions
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // We just set up all the views and their interactions
+        // This is broken down by hierarchy
+        // Note generally the views' callbacks just re-render other views
+        // It's only when we get to the save button do we actually read all the views' values to generate a task for a CRUD operation
         
         self.root
             .setBackgroundColor(to: TickColors.foregroundFill)
@@ -111,6 +125,8 @@ class TaskFormViewController: UIViewController {
                 self.updateButtonStack()
             })
         
+        // The (horizontal) date stack contains the (vertical) start and end date stacks
+        // This forms a flexible grid shape
         self.dateStack
             .constrainHorizontal()
             .setSpacing(to: 4)
@@ -180,6 +196,9 @@ class TaskFormViewController: UIViewController {
                 self.updateButtonStack()
             })
         
+        // The revert button (below) reverts the inputs to the original values of the task being edited
+        // Hence it's conditional to being in edit mode
+        
         self.buttonStack
             .setDistribution(to: .fillEqually)
             .setSpacing(to: 20)
@@ -200,6 +219,8 @@ class TaskFormViewController: UIViewController {
                 })
         }
         
+        // The save button is not conditional - its behaviour either "saves" a new task OR "saves" changes to a task being edited
+        
         self.saveButton
             .setAccessibilityIdentifier(to: "SAVE_TASK_BUTTON")
             .setColor(to: TickColors.primaryComponentFill)
@@ -216,6 +237,7 @@ class TaskFormViewController: UIViewController {
                 }
             })
         
+        // The task status indicator relies on the default values of the other views so we render it last
         self.updateTaskStatusIndicator()
         
         // If the user taps anywhere on-screen, cancel the keyboard
@@ -226,15 +248,21 @@ class TaskFormViewController: UIViewController {
         self.view.addGestureRecognizer(tapGesture)
     }
     
+    /// Configure this view controller to edit a task instead of creating a new one
+    /// - Parameters:
+    ///   - task: The task to be edited
     func setToEdit(task: Task) {
         self.taskInEditing = task
         self.matchEntriesToTaskInEditing()
     }
     
+    /// A callback to the screen being tapped
     @objc private func onScreenTap() {
+        // Close the keyboard
         self.view.endEditing(true)
     }
     
+    /// Retrieve the default start date for the start date picker
     private func getDefaultStartDate() -> Date {
         if let taskInEditing {
             return taskInEditing.ongoingDuration.start
@@ -243,6 +271,7 @@ class TaskFormViewController: UIViewController {
         return Date().roundedToFuture(to: .minute, nearest: 30) ?? Date()
     }
     
+    /// Retrieve the default end date for the end date picker
     private func getDefaultEndDate() -> Date {
         if let taskInEditing {
             return taskInEditing.ongoingDuration.end
@@ -253,8 +282,10 @@ class TaskFormViewController: UIViewController {
         return calendar.date(byAdding: .hour, value: 1, to: start) ?? start
     }
     
+    /// Re-render the task status indicator
     private func updateTaskStatusIndicator() {
         if let task = self.createTaskFromInputs() {
+            // The inputs make up a valid task - update based on that task's status
             switch task.status {
             case .upcoming:
                 self.statusIndicator
@@ -270,35 +301,50 @@ class TaskFormViewController: UIViewController {
                     .setTextColor(to: TickColors.completedTask)
             }
         } else {
+            // The inputs don't make up a valid task - inform the user
             self.statusIndicator
                 .setText(to: Strings("label.invalid").local.uppercased())
                 .setTextColor(to: TickColors.warning)
         }
     }
     
+    /// Update the button stack (revert and save buttons) based on the inputs and mode
     private func updateButtonStack() {
         if self.inEditMode {
+            // NOTE: In edit mode, if the button stack is added, the revert button is too
             let modifiedTask = self.createTaskFromInputs()
             if let modifiedTask, !modifiedTask.dataMatches(task: self.taskInEditing!) {
+                // We're editing a task, and its values are valid and different from the original
+                // We can either save these valid changes or revert them
                 self.addSaveButton()
                 self.addButtonStack()
             } else {
                 if let modifiedTask, modifiedTask.dataMatches(task: self.taskInEditing!) {
+                    // The (valid) values exactly match the task being edited
+                    // There's nothing to save nor revert
                     self.removeButtonStack()
                 } else if modifiedTask == nil {
+                    // The values of task being edited are no longer valid
+                    // We can revert the changes, but no saving them!
                     self.addButtonStack(removeSaveButton: true)
-                    self.removeSaveButton()
                 }
             }
         } else {
+            // NOTE: There is no such thing as the revert button in non-edit mode
+            // (The button stack represents the save button)
             if self.createTaskFromInputs() != nil {
+                // Valid inputs - we can save
                 self.addButtonStack()
-            } else if self.createTaskFromInputs() == nil {
+            } else {
+                // Invalid inputs - no saving!
                 self.removeButtonStack()
             }
         }
     }
     
+    /// Add the button stack (if possible) - it may contain just a revert button, just a save button, or both
+    /// - Parameters:
+    ///   - removeSaveButton: True if you wish to add the button stack whist removing the save button (doing both these actions independently breaks the animation)
     private func addButtonStack(removeSaveButton: Bool = false) {
         guard !self.buttonStackActive else {
             return
@@ -313,6 +359,7 @@ class TaskFormViewController: UIViewController {
         })
     }
     
+    /// Remove the button stack (if possible) - it may contain just a revert button, just a save button, or both
     private func removeButtonStack() {
         guard self.buttonStackActive else {
             return
@@ -323,6 +370,7 @@ class TaskFormViewController: UIViewController {
         }
     }
     
+    /// Add the save button to the button stack (if possible)
     private func addSaveButton() {
         guard !self.saveButtonActive else {
             return
@@ -330,6 +378,7 @@ class TaskFormViewController: UIViewController {
         self.buttonStack.addViewAnimated(self.saveButton)
     }
     
+    /// Remove the save button to the button stack (if possible)
     private func removeSaveButton() {
         guard self.saveButtonActive else {
             return
@@ -337,6 +386,8 @@ class TaskFormViewController: UIViewController {
         self.buttonStack.removeViewAnimated(self.saveButton)
     }
     
+    /// Generate a task based on the inputs provided
+    /// - Returns: The task from the inputs, or nil if invalid inputs
     private func createTaskFromInputs() -> Task? {
         // Read the entries
         let title = self.titleEntry.text.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -368,6 +419,7 @@ class TaskFormViewController: UIViewController {
         )
     }
     
+    /// Match all the entries to the task in editing
     private func matchEntriesToTaskInEditing() {
         guard let task = self.taskInEditing else {
             assertionFailure("This shouldn't be called unless a task in editing is defined")

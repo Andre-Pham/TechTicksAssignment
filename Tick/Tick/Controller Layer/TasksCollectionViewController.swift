@@ -7,6 +7,7 @@
 
 import UIKit
 
+/// View controller for the collection of tasks the user creates, views, and interacts with.
 class TasksCollectionViewController: UICollectionViewController, DatabaseListener {
     
     // MARK: - Constants
@@ -37,7 +38,7 @@ class TasksCollectionViewController: UICollectionViewController, DatabaseListene
     /// What types of databsae callbacks this is interested in - conforms to DatabaseListener protocol
     public var listenerType = DatabaseListenerType.task
     
-    // MARK: - View Lifecyle
+    // MARK: - View Lifecycle
 
     override func viewDidLoad() {
         super.viewDidLoad()
