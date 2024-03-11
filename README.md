@@ -6,6 +6,10 @@ An engaging and intuitive task management app designed for iOS.
 
 See **Documentation/Tech Assignment - iOS.pdf** for specifications.
 
+### Running
+
+Open **Tick/Tick.xcodeproj** to open the project in Xcode. Select **Tick-Release** as the build scheme (left of the device/simulator selection).
+
 # Documentation
 
 ### App Architecture
