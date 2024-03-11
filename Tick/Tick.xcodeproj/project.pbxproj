@@ -94,6 +94,7 @@
 		B6138C6F2B9B7AC500AFEB41 /* CheckBoxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6138C6E2B9B7AC500AFEB41 /* CheckBoxView.swift */; };
 		B6138C712B9C312000AFEB41 /* Date.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6138C702B9C312000AFEB41 /* Date.swift */; };
 		B6138C732B9C348B00AFEB41 /* TickContextMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6138C722B9C348B00AFEB41 /* TickContextMenuView.swift */; };
+		B690C3012B9E9D2C00C26F0A /* TickLabelledMultilineTextInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = B690C3002B9E9D2C00C26F0A /* TickLabelledMultilineTextInput.swift */; };
 		B6F16F8C2B9DCD0400138569 /* Session.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6F16F8B2B9DCD0400138569 /* Session.swift */; };
 		B6F16F8F2B9DD22D00138569 /* TaskListSectionHeaderReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6F16F8E2B9DD22D00138569 /* TaskListSectionHeaderReusableView.swift */; };
 		B6F16F912B9DD24000138569 /* TaskListHeaderReusableView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6F16F902B9DD24000138569 /* TaskListHeaderReusableView.swift */; };
@@ -211,6 +212,7 @@
 		B6138C6E2B9B7AC500AFEB41 /* CheckBoxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckBoxView.swift; sourceTree = "<group>"; };
 		B6138C702B9C312000AFEB41 /* Date.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Date.swift; sourceTree = "<group>"; };
 		B6138C722B9C348B00AFEB41 /* TickContextMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TickContextMenuView.swift; sourceTree = "<group>"; };
+		B690C3002B9E9D2C00C26F0A /* TickLabelledMultilineTextInput.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TickLabelledMultilineTextInput.swift; sourceTree = "<group>"; };
 		B6F16F8B2B9DCD0400138569 /* Session.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Session.swift; sourceTree = "<group>"; };
 		B6F16F8E2B9DD22D00138569 /* TaskListSectionHeaderReusableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskListSectionHeaderReusableView.swift; sourceTree = "<group>"; };
 		B6F16F902B9DD24000138569 /* TaskListHeaderReusableView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TaskListHeaderReusableView.swift; sourceTree = "<group>"; };
@@ -492,6 +494,7 @@
 				B6138C2A2B9A3F8D00AFEB41 /* TickChipToggle.swift */,
 				B6138C562B9B13F800AFEB41 /* TickDatePicker.swift */,
 				B6138C582B9B21C600AFEB41 /* TickLabelledTextInput.swift */,
+				B690C3002B9E9D2C00C26F0A /* TickLabelledMultilineTextInput.swift */,
 			);
 			path = Basic;
 			sourceTree = "<group>";
@@ -757,6 +760,7 @@
 				B6138C4B2B9A4C3000AFEB41 /* TaskListSectionHeaderView.swift in Sources */,
 				B6138C6D2B9B731000AFEB41 /* ManagedObjectStorable.swift in Sources */,
 				B6138C4F2B9A4E0500AFEB41 /* Task.swift in Sources */,
+				B690C3012B9E9D2C00C26F0A /* TickLabelledMultilineTextInput.swift in Sources */,
 				B6138C552B9B0E5100AFEB41 /* TaskFormViewController.swift in Sources */,
 				B6F16F932B9DD25700138569 /* TaskCardViewCell.swift in Sources */,
 				B60B0C992B9D9804008B8648 /* MinuteMonitor.swift in Sources */,

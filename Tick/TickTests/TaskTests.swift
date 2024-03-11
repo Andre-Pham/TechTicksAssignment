@@ -103,7 +103,7 @@ final class TaskTests: XCTestCase {
         let date = dateFormatter.date(from: "2000-01-01 12:00")!
         let laterDate = dateFormatter.date(from: "2000-01-01 12:01")!
         // Case 1: Same task
-        var task1 = Task(
+        let task1 = Task(
             title: "Task Title",
             description: "Task Description",
             ongoingDuration: DateInterval(

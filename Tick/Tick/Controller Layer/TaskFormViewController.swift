@@ -24,7 +24,7 @@ class TaskFormViewController: UIViewController {
     private let statusPrefix = TickText()
     private let statusIndicator = TickText()
     private let titleEntry = TickLabelledTextInput()
-    private let descriptionEntry = TickLabelledTextInput()
+    private let descriptionEntry = TickLabelledMultilineTextInput()
     private let dateStack = TickVStack()
     private let startDateStack = TickHStack()
     private let startDateLabel = TickText()

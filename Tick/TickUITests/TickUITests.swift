@@ -35,7 +35,7 @@ final class TickUITests: XCTestCase {
         XCTAssertTrue(descriptionEntry.exists)
         descriptionEntry.tap()
         descriptionEntry.typeText("Task Description")
-        app.buttons["return"].tap()
+        app.staticTexts["New Task"].tap()
         let saveButton = app.buttons["SAVE_TASK_BUTTON"]
         XCTAssertTrue(saveButton.exists)
         saveButton.tap()
