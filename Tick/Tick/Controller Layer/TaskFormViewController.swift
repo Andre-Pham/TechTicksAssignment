@@ -17,7 +17,9 @@ class TaskFormViewController: UIViewController {
     private let scroll = TickScrollView()
     private let scrollStack = TickVStack()
     private let headerSection = TickVStack()
+    private let headerTopRow = TickHStack()
     private let header = TickText()
+    private let headerDismissButton = TickIconButton()
     private let statusStack = TickHStack()
     private let statusPrefix = TickText()
     private let statusIndicator = TickText()
@@ -85,13 +87,27 @@ class TaskFormViewController: UIViewController {
         
         self.headerSection
             .constrainHorizontal()
-            .addView(self.header)
+            .addView(self.headerTopRow)
             .addView(self.statusStack)
         
+        self.headerTopRow
+            .constrainHorizontal()
+            .addView(self.header)
+            .addSpacer()
+            .addView(self.headerDismissButton)
+        
         self.header
-            .constrainLeft()
             .setFont(to: TickFont(font: TickFonts.Inter.Black, size: 48))
             .setText(to: self.inEditMode ? Strings("header.editTask").local : Strings("header.newTask").local)
+        
+        self.headerDismissButton
+            .setIcon(to: "xmark")
+            .overrideIconVerticalPadding(to: 8.0)
+            .overrideIconHorizontalPadding(to: 8.0)
+            .setIconColor(to: TickColors.accent)
+            .setOnTap({
+                self.dismiss(animated: true)
+            })
         
         self.statusStack
             .constrainLeft()
