@@ -1,28 +1,98 @@
-# Created by https://www.toptal.com/developers/gitignore/api/swift,xcode,swiftpackagemanager,swiftpm,cocoapods,macos,windows,linux
-# Edit at https://www.toptal.com/developers/gitignore?templates=swift,xcode,swiftpackagemanager,swiftpm,cocoapods,macos,windows,linux
+# Xcode
+#
+# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
 
-### CocoaPods ###
-## CocoaPods GitIgnore Template
+## User settings
+xcuserdata/
 
-# CocoaPods - Only use to conserve bandwidth / Save time on Pushing
-#           - Also handy if you have a large number of dependant pods
-#           - AS PER https://guides.cocoapods.org/using/using-cocoapods.html NEVER IGNORE THE LOCK FILE
-Pods/
+## compatibility with Xcode 8 and earlier (ignoring not required starting Xcode 9)
+*.xcscmblueprint
+*.xccheckout
 
-### Linux ###
-*~
+## compatibility with Xcode 3 and earlier (ignoring not required starting Xcode 4)
+build/
+DerivedData/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.mode1v3
+!default.mode1v3
+*.mode2v3
+!default.mode2v3
+*.perspectivev3
+!default.perspectivev3
 
-# temporary files which can be created if a process still has a handle open of a deleted file
-.fuse_hidden*
+## Obj-C/Swift specific
+*.hmap
 
-# KDE directory preferences
-.directory
+## App packaging
+*.ipa
+*.dSYM.zip
+*.dSYM
 
-# Linux trash folder which might appear on any partition or disk
-.Trash-*
+## Playgrounds
+timeline.xctimeline
+playground.xcworkspace
 
-# .nfs files are created when an open file is removed but is still being accessed
-.nfs*
+# Swift Package Manager
+#
+# Add this line if you want to avoid checking in source code from Swift Package Manager dependencies.
+# Packages/
+# Package.pins
+# Package.resolved
+# *.xcodeproj
+#
+# Xcode automatically generates this directory with a .xcworkspacedata file and xcuserdata
+# hence it is not needed unless you have added a package configuration file to your project
+# .swiftpm
+
+.build/
+
+# CocoaPods
+#
+# We recommend against adding the Pods directory to your .gitignore. However
+# you should judge for yourself, the pros and cons are mentioned at:
+# https://guides.cocoapods.org/using/using-cocoapods.html#should-i-check-the-pods-directory-into-source-control
+#
+# Pods/
+#
+# Add this line if you want to avoid checking in source code from the Xcode workspace
+# *.xcworkspace
+
+# Carthage
+#
+# Add this line if you want to avoid checking in source code from Carthage dependencies.
+# Carthage/Checkouts
+
+Carthage/Build/
+
+# Accio dependency management
+Dependencies/
+.accio/
+
+# fastlane
+#
+# It is recommended to not store the screenshots in the git repo.
+# Instead, use fastlane to re-generate the screenshots whenever they are needed.
+# For more information about the recommended setup visit:
+# https://docs.fastlane.tools/best-practices/source-control/#source-control
+
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# Code Injection
+#
+# After new code Injection tools there's a generated folder /iOSInjectionProject
+# https://github.com/johnno1962/injectionforxcode
+
+iOSInjectionProject/
+
+
+
+# Created by https://www.toptal.com/developers/gitignore/api/swift,xcode,swiftpackagemanager,swiftpm,macos
+# Edit at https://www.toptal.com/developers/gitignore?templates=swift,xcode,swiftpackagemanager,swiftpm,macos
 
 ### macOS ###
 # General
@@ -31,8 +101,7 @@ Pods/
 .LSOverride
 
 # Icon must end with two \r
-Icon
-
+Icon
 
 # Thumbnails
 ._*
@@ -52,10 +121,6 @@ Icon
 Network Trash Folder
 Temporary Items
 .apdisk
-
-### macOS Patch ###
-# iCloud generated files
-*.icloud
 
 ### Swift ###
 # Xcode
@@ -144,49 +209,31 @@ iOSInjectionProject/
 ### SwiftPackageManager ###
 Packages
 xcuserdata
-*.xcodeproj
+# (MANUALLY REMOVED BY ANDRE)
+# *.xcodeproj
 
 
 ### SwiftPM ###
 
 
-### Windows ###
-# Windows thumbnail cache files
-Thumbs.db
-Thumbs.db:encryptable
-ehthumbs.db
-ehthumbs_vista.db
-
-# Dump file
-*.stackdump
-
-# Folder config file
-[Dd]esktop.ini
-
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
-
-# Windows Installer files
-*.cab
-*.msi
-*.msix
-*.msm
-*.msp
-
-# Windows shortcuts
-*.lnk
-
 ### Xcode ###
+# Xcode
+# gitignore contributors: remember to update Global/Xcode.gitignore, Objective-C.gitignore & Swift.gitignore
 
-## Xcode 8 and earlier
 
-### Xcode Patch ###
-*.xcodeproj/*
-!*.xcodeproj/project.pbxproj
-!*.xcodeproj/xcshareddata/
-!*.xcodeproj/project.xcworkspace/
-!*.xcworkspace/contents.xcworkspacedata
+
+
+## Gcc Patch
 /*.gcno
-**/xcshareddata/WorkspaceSettings.xcsettings
 
-# End of https://www.toptal.com/developers/gitignore/api/swift,xcode,swiftpackagemanager,swiftpm,cocoapods,macos,windows,linux
+### Xcode Patch ### (MANUALLY REMOVED BY ANDRE)
+# *.xcodeproj/*
+# !*.xcodeproj/project.pbxproj
+# !*.xcodeproj/xcshareddata/
+# !*.xcworkspace/contents.xcworkspacedata
+# **/xcshareddata/WorkspaceSettings.xcsettings
+
+# End of https://www.toptal.com/developers/gitignore/api/swift,xcode,swiftpackagemanager,swiftpm,macos
+
+
+/Data
